@@ -37,8 +37,9 @@ function systemStateDir(): string {
 }
 
 export function stateDir(env: Env = runtimeEnv()): string {
+  if (env === "dev" && runsFromSource()) return packageRoot;
   if (process.env.WORKBENCH_HOME) return resolve(process.env.WORKBENCH_HOME);
-  return env === "dev" && runsFromSource() ? packageRoot : systemStateDir();
+  return systemStateDir();
 }
 
 export const fallbackDir = () => join(tmpdir(), "workbench");

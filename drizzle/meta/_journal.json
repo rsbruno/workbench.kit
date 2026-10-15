@@ -50,6 +50,20 @@
       "when": 1792062354917,
       "tag": "0006_unusual_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792100172627,
+      "tag": "0007_blushing_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792101041268,
+      "tag": "0008_lovely_khan",
+      "breakpoints": true
     }
   ]
 }
