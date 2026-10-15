@@ -10,6 +10,9 @@
     "dist",
     "drizzle"
   ],
+  "config": {
+    "releaseRepo": "rsbruno/workbench.kit"
+  },
   "engines": {
     "node": ">=22.16"
   },
