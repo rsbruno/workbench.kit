@@ -1,4 +1,6 @@
 import { isAbsolute, resolve, join } from "node:path";
+import { readFileSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { homedir, tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
@@ -43,3 +45,53 @@ export function stateDir(env: Env = runtimeEnv()): string {
 }
 
 export const fallbackDir = () => join(tmpdir(), "workbench");
+
+const APP_FOLDER = "workbench";
+
+export function parseUserDirs(content: string, home: string): string | undefined {
+  const match = /^\s*XDG_DOCUMENTS_DIR\s*=\s*"([^"]+)"/m.exec(content);
+  if (!match) return undefined;
+  const dir = match[1]!.replace(/^\$HOME(?=\/|$)/, home);
+  return isAbsolute(dir) && resolve(dir) !== resolve(home) ? resolve(dir) : undefined;
+}
+
+function windowsDocuments(): string | undefined {
+  try {
+    const out = execFileSync(
+      "powershell.exe",
+      ["-NoProfile", "-NonInteractive", "-Command", "[Environment]::GetFolderPath('MyDocuments')"],
+      { windowsHide: true, encoding: "utf8", timeout: 5000 }
+    ).trim();
+    return absolute(out);
+  } catch {
+    return undefined;
+  }
+}
+
+function linuxDocuments(home: string): string | undefined {
+  const fromEnv = absolute(process.env.XDG_DOCUMENTS_DIR);
+  if (fromEnv) return fromEnv;
+  const config = absolute(process.env.XDG_CONFIG_HOME) ?? join(home, ".config");
+  try {
+    return parseUserDirs(readFileSync(join(config, "user-dirs.dirs"), "utf8"), home);
+  } catch {
+    return undefined;
+  }
+}
+
+/** The user's real Documents folder, whatever the system language (Documentos, Documents, Dokumente...). */
+export function documentsDir(): string {
+  const home = homedir();
+  const found =
+    process.platform === "win32"
+      ? windowsDocuments()
+      : process.platform === "darwin"
+        ? join(home, "Documents")
+        : linuxDocuments(home);
+  if (found && existsSync(found)) return found;
+  return ["Documents", "Documentos"].map((name) => join(home, name)).find(existsSync) ?? home;
+}
+
+const appDir = () => join(documentsDir(), APP_FOLDER);
+
+export const timesheetsDir = () => join(appDir(), "timesheets");

@@ -8,7 +8,7 @@ import { groups } from "./commands";
 import { pkg } from "./lib/pkg";
 
 const FLAGS_HELP =
-  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --start/--end HH:MM --type comum|extra (time)   -v, --version";
+  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --out file (timesheet pdf|xlsx|csv)   --start/--end HH:MM --type comum|extra (time)   -v, --version";
 
 function help() {
   header();
@@ -38,6 +38,7 @@ function parse() {
         type: { type: "string" },
         text: { type: "string" },
         path: { type: "string" },
+        out: { type: "string" },
         end: { type: "string" }
       },
       allowPositionals: true

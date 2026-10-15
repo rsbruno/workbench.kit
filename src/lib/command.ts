@@ -11,6 +11,7 @@ export type Flags = {
   type?: string;
   end?: string;
   text?: string;
+  out?: string;
 };
 
 export type Command = {
