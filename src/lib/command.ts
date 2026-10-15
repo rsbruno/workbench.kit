@@ -7,6 +7,11 @@ export type Flags = {
   force?: boolean;
   path?: string;
   json?: boolean;
+  start?: string;
+  type?: string;
+  end?: string;
+  text?: string;
+  out?: string;
 };
 
 export type Command = {

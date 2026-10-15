@@ -14,3 +14,9 @@ export function dateError(input: string): string | undefined {
   if (!input.trim()) return undefined;
   return parsePtBrDate(input) ? undefined : "data inválida: use DD/MM/AAAA, uma data real e não futura";
 }
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+export const brDay = (d: Date) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+
+export const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
