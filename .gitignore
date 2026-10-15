@@ -2,3 +2,5 @@ node_modules
 dist
 workbench.tgz
 *.tgz
+workbench.dev.db
+workbench.dev.db-*

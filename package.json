@@ -16,6 +16,7 @@
   "scripts": {
     "dev": "bun run src/cli.ts",
     "db:generate": "drizzle-kit generate",
+    "db:reset": "bun run src/scripts/db-reset.ts",
     "build": "bun build src/cli.ts --target=node --outfile=dist/cli.js && chmod +x dist/cli.js",
     "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit",

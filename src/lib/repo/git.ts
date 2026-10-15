@@ -36,8 +36,6 @@ const git = (cwd: string, args: string[]) => run("git", ["-C", cwd, ...args], { 
 
 let sinceAsFilter: Promise<boolean> | undefined;
 
-// `--since` stops walking at the first commit older than the date, which hides newer ancestors when
-// dates are not monotonic (clock skew, rebases). `--since-as-filter` (git >= 2.36) walks everything instead.
 async function sinceArg(cwd: string, date: string): Promise<string> {
   sinceAsFilter ??= git(cwd, ["--version"]).then(
     (r) => {

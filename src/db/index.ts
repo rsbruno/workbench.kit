@@ -1,10 +1,10 @@
 import { migrate } from "drizzle-orm/sqlite-proxy/migrator";
 import { drizzle } from "drizzle-orm/sqlite-proxy";
+import { readFileSync, constants } from "node:fs";
 import { access, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { constants } from "node:fs";
 
-import { hasHomeOverride, fallbackDir, stateDir } from "../lib/paths";
+import { hasHomeOverride, fallbackDir, stateDir, dbFile } from "../lib/paths";
 import { packageRoot } from "../lib/pkg";
 import * as schema from "./schema";
 
@@ -19,8 +19,6 @@ type Driver = { DatabaseSync?: new (file: string) => Raw; Database?: new (file: 
 
 export type Db = ReturnType<typeof drizzle<typeof schema>>;
 
-const FILE = "workbench.db";
-
 async function writableDir(dir: string): Promise<boolean> {
   try {
     await mkdir(dir, { recursive: true });
@@ -33,14 +31,14 @@ async function writableDir(dir: string): Promise<boolean> {
 
 export async function resolveDbPath(): Promise<string> {
   const main = stateDir();
-  if (await writableDir(main)) return join(main, FILE);
+  if (await writableDir(main)) return join(main, dbFile());
   if (hasHomeOverride()) throw new Error(`WORKBENCH_HOME is not writable: ${main}`);
 
   const fallback = fallbackDir();
   if (!(await writableDir(fallback)))
     throw new Error(`no writable directory for the database; set WORKBENCH_HOME (tried ${main})`);
   process.stderr.write(`warning: ${main} is not writable; using ${fallback} (data may be lost on reboot)\n`);
-  return join(fallback, FILE);
+  return join(fallback, dbFile());
 }
 
 function silenceSqliteWarning() {
@@ -64,10 +62,35 @@ function rowsOf(stmt: Stmt, params: unknown[]): unknown[][] {
   return stmt.all(...params) as unknown[][];
 }
 
-function transaction(raw: Raw, queries: string[]) {
-  raw.exec("BEGIN");
+const migrationsFolder = () => join(packageRoot, "drizzle");
+
+function knownMigrations(): number {
+  const journal = JSON.parse(readFileSync(join(migrationsFolder(), "meta", "_journal.json"), "utf8")) as {
+    entries: unknown[];
+  };
+  return journal.entries.length;
+}
+
+function appliedMigrations(raw: Raw): number {
+  const created = raw.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = '__drizzle_migrations'").all();
+  if (!created.length) return 0;
+  const [row] = raw.prepare("SELECT COUNT(*) AS n FROM __drizzle_migrations").all() as { n: number }[];
+  return Number(row?.n ?? 0);
+}
+
+async function migrateExclusively(raw: Raw, db: Db) {
+  raw.exec("BEGIN IMMEDIATE");
   try {
-    for (const query of queries) raw.exec(query);
+    if (appliedMigrations(raw) > knownMigrations()) {
+      throw new Error("o banco foi atualizado por uma versão mais nova do workbench; atualize o CLI antes de continuar");
+    }
+    await migrate(
+      db,
+      async (queries) => {
+        for (const query of queries) raw.exec(query);
+      },
+      { migrationsFolder: migrationsFolder() }
+    );
     raw.exec("COMMIT");
   } catch (e) {
     raw.exec("ROLLBACK");
@@ -88,6 +111,7 @@ export async function openDb(file?: string): Promise<{ close: () => void; db: Db
   file ??= await resolveDbPath();
   await mkdir(dirname(file), { recursive: true });
   const raw = await openRaw(file);
+  raw.exec("PRAGMA busy_timeout = 10000");
   raw.exec("PRAGMA foreign_keys = ON");
 
   const db = drizzle<typeof schema>(
@@ -103,6 +127,6 @@ export async function openDb(file?: string): Promise<{ close: () => void; db: Db
     { schema }
   );
 
-  await migrate(db, async (queries) => transaction(raw, queries), { migrationsFolder: join(packageRoot, "drizzle") });
+  await migrateExclusively(raw, db);
   return { close: () => raw.close(), db };
 }
