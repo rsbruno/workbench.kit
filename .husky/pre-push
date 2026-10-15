@@ -1,0 +1,3 @@
+echo "🔶 running build"
+bun run build
+echo "✅ build"

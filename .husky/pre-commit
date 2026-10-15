@@ -1,0 +1,14 @@
+echo "🔶 running prettier"
+bun run format
+echo "✅ prettier"
+
+echo "🔶 running eslint"
+bun run lint:fix
+echo "✅ eslint"
+
+echo "🔶 running tsc"
+bun run typecheck
+echo "✅ tsc"
+
+git add .
+echo "✅ all good commit ready"

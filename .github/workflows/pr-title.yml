@@ -1,0 +1,41 @@
+name: PR Title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          ignoreLabels: dependencies
+          requireScope: true
+          headerPattern: '^\[([A-Z]+!?)\]\[([^\]]+)\]\[([^\]]+)\](?:\[([^\]]+)\])?: (.+)$'
+          headerPatternCorrespondence: type, scope, branch, card, subject
+          types: |
+            FEAT
+            FEAT!
+            FIX
+            FIX!
+            PERF
+            PERF!
+            REFACTOR
+            REFACTOR!
+            DOCS
+            STYLE
+            TEST
+            BUILD
+            CI
+            CHORE
+            REVERT
+          subjectPattern: ^(?![A-Z]).*[^.]$
+          subjectPatternError: |
+            A descrição do título "{subject}" deve começar com minúscula e não terminar com ponto.
+            Formato: [TIPO][ESCOPO][branch][CARD opcional]: descrição curta

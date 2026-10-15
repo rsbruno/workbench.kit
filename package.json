@@ -1,0 +1,38 @@
+{
+  "name": "workbench",
+  "displayName": "Workbench Kit",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "workbench": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "build": "bun build src/cli.ts --target=node --outfile=dist/cli.js && chmod +x dist/cli.js",
+    "prepublishOnly": "bun run build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"**/*.{ts,js,json}\"",
+    "lint:fix": "eslint \"**/*.{ts,js,json}\" --fix",
+    "format:check": "prettier --check \"**/*.{ts,js,json}\"",
+    "format": "prettier --write \"**/*.{ts,js,json}\"",
+    "prepare": "husky || true"
+  },
+  "devDependencies": {
+    "@clack/core": "^1.5.1",
+    "@clack/prompts": "^1.8.1",
+    "@eslint/js": "9.39.5",
+    "@semantic-release/exec": "^7.1.0",
+    "@types/node": "^26.6.5",
+    "eslint": "9.39.5",
+    "eslint-plugin-perfectionist": "5.10.1",
+    "globals": "17.11.0",
+    "husky": "9.1.7",
+    "prettier": "3.9.6",
+    "semantic-release": "^25.0.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.67.0"
+  }
+}
