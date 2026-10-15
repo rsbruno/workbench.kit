@@ -38,6 +38,26 @@ function systemStateDir(): string {
   return join(base, "workbench");
 }
 
+function systemConfigDir(): string {
+  const home = homedir();
+  const base =
+    process.platform === "win32"
+      ? (absolute(process.env.APPDATA) ?? join(home, "AppData", "Roaming"))
+      : process.platform === "darwin"
+        ? join(home, "Library", "Application Support")
+        : (absolute(process.env.XDG_CONFIG_HOME) ?? join(home, ".config"));
+  return join(base, "workbench");
+}
+
+/** Where the user settings live: the system config folder, never the database. */
+export function configDir(env: Env = runtimeEnv()): string {
+  if (env === "dev" && runsFromSource()) return systemConfigDir();
+  if (process.env.WORKBENCH_HOME) return resolve(process.env.WORKBENCH_HOME);
+  return systemConfigDir();
+}
+
+export const configFile = (env: Env = runtimeEnv()) => join(configDir(env), env === "dev" ? "config.dev.json" : "config.json");
+
 export function stateDir(env: Env = runtimeEnv()): string {
   if (env === "dev" && runsFromSource()) return packageRoot;
   if (process.env.WORKBENCH_HOME) return resolve(process.env.WORKBENCH_HOME);

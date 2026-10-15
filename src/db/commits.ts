@@ -1,9 +1,9 @@
-import { inArray, count, and, sql, eq } from "drizzle-orm";
+import { inArray, count, and, sql, gte, eq, lt } from "drizzle-orm";
 
 import type { Commit } from "../lib/repo/git";
 import type { Db } from "./index";
 
-import { commits } from "./schema";
+import { type CommitRow, commits } from "./schema";
 
 const CHUNK = 100;
 const LOOKUP = 500;
@@ -61,6 +61,33 @@ export async function saveCommits(db: Db, projectId: string, list: Commit[]): Pr
     updated++;
   }
   return { existing: known.size, inserted, updated };
+}
+
+export type MonthCommit = Pick<
+  CommitRow,
+  "deletions" | "insertions" | "filesChanged" | "authoredAt" | "subject" | "branch" | "body" | "type" | "day"
+>;
+
+/** Commits saved for a project in a month (0-based month), oldest first. `day` is the local YYYY-MM-DD. */
+export async function listCommitsOfMonth(db: Db, projectId: string, year: number, month: number): Promise<MonthCommit[]> {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const first = `${year}-${pad(month + 1)}-01`;
+  const next = month === 11 ? `${year + 1}-01-01` : `${year}-${pad(month + 2)}-01`;
+  return db
+    .select({
+      filesChanged: commits.filesChanged,
+      insertions: commits.insertions,
+      authoredAt: commits.authoredAt,
+      deletions: commits.deletions,
+      subject: commits.subject,
+      branch: commits.branch,
+      body: commits.body,
+      type: commits.type,
+      day: commits.day
+    })
+    .from(commits)
+    .where(and(eq(commits.projectId, projectId), gte(commits.day, first), lt(commits.day, next)))
+    .orderBy(commits.authoredAt);
 }
 
 export async function lastSyncedAt(db: Db, projectId: string): Promise<Date | null> {
