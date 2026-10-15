@@ -7,7 +7,8 @@ import { header } from "./ui/header";
 import { groups } from "./commands";
 import { pkg } from "./lib/pkg";
 
-const FLAGS_HELP = "flags: --since/--until DD/MM/AAAA (timesheet explore)   --json   -v, --version";
+const FLAGS_HELP =
+  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore)   --json   --force   --path/--folder/--remote (projects add|update)   -v, --version";
 
 function help() {
   header();
@@ -25,10 +26,15 @@ function parse() {
     return parseArgs({
       options: {
         version: { type: "boolean", short: "v" },
+        force: { type: "boolean", short: "f" },
         help: { type: "boolean", short: "h" },
+        project: { type: "string" },
+        folder: { type: "string" },
+        remote: { type: "string" },
         since: { type: "string" },
         until: { type: "string" },
-        json: { type: "boolean" }
+        json: { type: "boolean" },
+        path: { type: "string" }
       },
       allowPositionals: true
     });
@@ -53,11 +59,15 @@ if (values.help || !command) {
   process.exit(values.help ? 0 : 1);
 }
 
+const quiet = Boolean(values.json);
+
 try {
-  header();
-  intro(`workbench ${group} ${command.name}`);
+  if (!quiet) {
+    header();
+    intro(`workbench ${group} ${command.name}`);
+  }
   await command.run(rest, values);
-  outro("done");
+  if (!quiet) outro("done");
 } catch (e) {
   console.error(`error: ${(e as Error).message}`);
   process.exit(1);

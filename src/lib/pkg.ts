@@ -18,4 +18,8 @@ function findPackageJson(): string {
   return join(dir, "package.json");
 }
 
-export const pkg: Pkg = JSON.parse(readFileSync(findPackageJson(), "utf8"));
+const file = findPackageJson();
+
+export const packageRoot = dirname(file);
+
+export const pkg: Pkg = JSON.parse(readFileSync(file, "utf8"));
