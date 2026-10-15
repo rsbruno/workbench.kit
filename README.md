@@ -70,7 +70,7 @@ bun run dev commits explore
 bun run build
 ```
 
-O banco é SQLite com Drizzle e fica em `~/.local/state/workbench/workbench.db` (ou em `WORKBENCH_HOME`). Os comandos `projects` o usam. Depois de mudar `src/db/schema.ts`, rode `bun run db:generate` para gerar a migração em `drizzle/`.
+O banco é SQLite com Drizzle e fica em `~/.local/state/workbench/` (ou em `WORKBENCH_HOME`). Há dois arquivos: `workbench.db` (produção, usado pelo pacote instalado) e `workbench.dev.db` (desenvolvimento, usado ao rodar pelo código-fonte com `bun run dev`, e criado na **raiz do projeto**, ignorado pelo git), então testar não suja os seus dados reais. `WORKBENCH_ENV=dev|prod` força um dos dois, e `bun run db:reset` apaga só o de desenvolvimento. As migrações rodam sozinhas na primeira vez que um comando abre o banco depois de instalar ou atualizar o CLI (com bloqueio, então vários comandos ao mesmo tempo são seguros), e um banco mais novo que o CLI é recusado com um aviso para atualizar. Depois de mudar `src/db/schema.ts`, rode `bun run db:generate` para gerar a migração em `drizzle/`.
 
 Contribuições entram por PR. O título segue o formato:
 
