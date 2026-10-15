@@ -4,8 +4,8 @@ import type { Db } from "../../db";
 
 import { formatDuration, formatClock, KIND_LABEL, parseClock, clockError, parseKind, TimeKind } from "../../lib/repo/clock";
 import { resolveProject, pickDaily, br } from "../daily/shared";
+import { cleanDescription, listTimes } from "../../db/times";
 import { selectOne, askText } from "../../ui/prompt";
-import { listTimes } from "../../db/times";
 
 export const rangeOf = (t: TimeEntry) => `${formatClock(t.startMinute)}–${formatClock(t.endMinute)}`;
 
@@ -49,6 +49,11 @@ export async function askClock(label: string, initial?: number, after?: number):
     initial: initial === undefined ? undefined : formatClock(initial)
   });
   return parseClock(answer)!;
+}
+
+export async function resolveDescription(flag: string | undefined, initial?: string): Promise<string> {
+  if (flag !== undefined) return cleanDescription(flag);
+  return askText("Descrição", { validate: (v) => (v ? undefined : "a descrição é obrigatória"), initial });
 }
 
 export function askKind(current?: TimeKind): Promise<TimeKind> {

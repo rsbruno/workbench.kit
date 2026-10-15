@@ -38,3 +38,14 @@ export function parseKind(input: string): TimeKind | null {
   if (["extra", "overtime"].includes(value)) return TimeKind.OVERTIME;
   return null;
 }
+
+export const SHIFTS = [
+  { key: "morning", label: "manhã", end: 12 * 60, start: 0 },
+  { key: "afternoon", label: "tarde", start: 12 * 60, end: 18 * 60 },
+  { end: DAY_MINUTES, label: "noite", start: 18 * 60, key: "night" }
+] as const;
+
+export type Shift = (typeof SHIFTS)[number];
+
+export const overlap = (start: number, end: number, shift: Shift) =>
+  Math.max(0, Math.min(end, shift.end) - Math.max(start, shift.start));

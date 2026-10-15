@@ -1,8 +1,7 @@
-import { resolveDaily, flagClock, flagKind, askClock, pickTime, timeRows, askKind } from "./shared";
+import { resolveDescription, resolveDaily, flagClock, flagKind, askClock, pickTime, timeRows, askKind } from "./shared";
 import { type TimePatch, updateTime } from "../../db/times";
 import { defineCommand } from "../../lib/command";
 import { summary, info } from "../../ui/summary";
-import { askText } from "../../ui/prompt";
 import { withDb } from "../../db";
 
 export const update = defineCommand({
@@ -15,17 +14,17 @@ export const update = defineCommand({
       let patch: TimePatch;
       if (given) {
         patch = {
+          description: flags.text === undefined ? undefined : await resolveDescription(flags.text),
           startMinute: flags.start?.trim() ? flagClock("start", flags.start) : undefined,
           endMinute: flags.end?.trim() ? flagClock("end", flags.end) : undefined,
-          kind: flags.type?.trim() ? flagKind(flags.type) : undefined,
-          description: flags.text
+          kind: flags.type?.trim() ? flagKind(flags.type) : undefined
         };
       } else {
         const kind = await askKind(time.kind);
         const startMinute = await askClock("Hora de início (HH:MM)", time.startMinute);
         patch = {
-          description: await askText("Descrição (opcional)", { initial: time.description }),
           endMinute: await askClock("Hora de fim (HH:MM)", time.endMinute, startMinute),
+          description: await resolveDescription(undefined, time.description),
           startMinute,
           kind
         };

@@ -8,7 +8,7 @@ import { groups } from "./commands";
 import { pkg } from "./lib/pkg";
 
 const FLAGS_HELP =
-  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --start/--end HH:MM --type comum|extra (time)   -v, --version";
+  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --start/--end HH:MM --type comum|extra (time)   -v, --version";
 
 function help() {
   header();

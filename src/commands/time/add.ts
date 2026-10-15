@@ -1,8 +1,7 @@
-import { resolveDaily, flagClock, flagKind, askClock, timeRows, askKind } from "./shared";
+import { resolveDescription, resolveDaily, flagClock, flagKind, askClock, timeRows, askKind } from "./shared";
 import { defineCommand } from "../../lib/command";
 import { createTime } from "../../db/times";
 import { summary } from "../../ui/summary";
-import { askText } from "../../ui/prompt";
 import { withDb } from "../../db";
 
 export const add = defineCommand({
@@ -14,7 +13,7 @@ export const add = defineCommand({
       const endMinute = flags.end?.trim()
         ? flagClock("end", flags.end)
         : await askClock("Hora de fim (HH:MM)", undefined, startMinute);
-      const description = flags.text !== undefined ? flags.text : await askText("Descrição (opcional)");
+      const description = await resolveDescription(flags.text);
       const time = await createTime(db, daily, { description, startMinute, endMinute, kind });
       summary("horas lançadas", timeRows(time, daily, project));
     }),

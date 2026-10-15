@@ -9,6 +9,12 @@ export type TimeInput = { description: string; startMinute: number; endMinute: n
 
 export type TimePatch = Partial<TimeInput>;
 
+export function cleanDescription(input: string): string {
+  const description = input.trim();
+  if (!description) throw new Error("a descrição do lançamento é obrigatória");
+  return description;
+}
+
 export const listTimes = async (db: Db, dailyIds: string[]): Promise<TimeEntry[]> =>
   dailyIds.length
     ? db.select().from(timeEntries).where(inArray(timeEntries.dailyId, dailyIds)).orderBy(timeEntries.startMinute)
@@ -37,7 +43,7 @@ export async function createTime(db: Db, daily: Daily, input: TimeInput): Promis
   await assertValid(db, daily, input);
   const [row] = await db
     .insert(timeEntries)
-    .values({ ...input, description: input.description.trim(), dailyId: daily.id })
+    .values({ ...input, description: cleanDescription(input.description), dailyId: daily.id })
     .returning();
   return row!;
 }
@@ -49,7 +55,7 @@ export async function updateTime(
   patch: TimePatch
 ): Promise<{ changed: boolean; time: TimeEntry }> {
   const next: TimeInput = {
-    description: (patch.description ?? current.description).trim(),
+    description: patch.description === undefined ? current.description : cleanDescription(patch.description),
     startMinute: patch.startMinute ?? current.startMinute,
     endMinute: patch.endMinute ?? current.endMinute,
     kind: patch.kind ?? current.kind
