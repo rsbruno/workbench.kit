@@ -2,9 +2,9 @@
 import { intro, outro } from "@clack/prompts";
 import { parseArgs } from "node:util";
 
+import { topLevel, groups } from "./commands";
 import { findCommand } from "./lib/command";
 import { header } from "./ui/header";
-import { groups } from "./commands";
 import { pkg } from "./lib/pkg";
 
 const FLAGS_HELP =
@@ -12,13 +12,14 @@ const FLAGS_HELP =
 
 function help() {
   header();
+  const top = topLevel.map((c) => `  workbench ${c.name.padEnd(8)} ${c.description}`);
   const lines = Object.entries(groups).flatMap(([group, commands]) => [
     `workbench ${group} <command>`,
     "",
     ...commands.map((c) => `  ${c.name.padEnd(8)} ${c.description}`),
     ""
   ]);
-  process.stdout.write(`${[...lines, FLAGS_HELP, ""].join("\n")}\n`);
+  process.stdout.write(`${[...top, "", ...lines, FLAGS_HELP, ""].join("\n")}\n`);
 }
 
 function parse() {
@@ -57,7 +58,8 @@ if (values.version) {
 }
 
 const [group, action, ...rest] = positionals;
-const command = group && action ? findCommand(groups[group] ?? [], action) : undefined;
+const direct = group && !action ? findCommand(topLevel, group) : undefined;
+const command = direct ?? (group && action ? findCommand(groups[group] ?? [], action) : undefined);
 
 if (values.help || !command) {
   help();
@@ -69,7 +71,7 @@ const quiet = Boolean(values.json);
 try {
   if (!quiet) {
     header();
-    intro(`workbench ${group} ${command.name}`);
+    intro(direct ? `workbench ${command.name}` : `workbench ${group} ${command.name}`);
   }
   await command.run(rest, values);
   if (!quiet) outro("done");

@@ -57,6 +57,8 @@ Formato: `workbench <grupo> <comando>`. Sem argumentos, a CLI pergunta o que fal
 | `workbench commits explore` | Lista seus commits do projeto da pasta atual (ou do escolhido), agrupados por dia. Grava os commits no banco. Com `--json` ou sem terminal não pergunta nada: usa o projeto que casa com a pasta ou o de `--project` |
 | `workbench projects add [nome]` | Cria um projeto (o id é um UUIDv6). Sem o nome, pergunta |
 | `workbench projects list` | Lista os projetos do mais antigo ao mais novo (`--json` imprime a lista crua) |
+| `workbench update` | Atualiza a CLI para a última release do GitHub e aplica as migrations no banco de produção (`--force` reinstala mesmo na versão atual) |
+| `workbench kit migrate` | Aplica as migrations pendentes no banco |
 | `workbench projects update [nome\|id] [novo nome]` | Renomeia um projeto. Sem argumentos, escolhe numa lista |
 | `workbench projects remove [nome\|id]` | Remove um projeto, pedindo confirmação (`--force` dispensa) |
 
