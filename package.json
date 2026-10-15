@@ -27,12 +27,12 @@
     "@semantic-release/exec": "^7.1.0",
     "@types/node": "^26.6.5",
     "eslint": "9.39.5",
-    "eslint-plugin-perfectionist": "5.10.1",
-    "globals": "17.11.0",
+    "eslint-plugin-perfectionist": "5.12.1",
+    "globals": "17.13.0",
     "husky": "9.1.7",
-    "prettier": "3.9.6",
+    "prettier": "3.9.10",
     "semantic-release": "^25.0.9",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.67.0"
+    "typescript-eslint": "8.71.1"
   }
 }
