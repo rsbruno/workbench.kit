@@ -1,4 +1,13 @@
-export type Flags = { since?: string; until?: string; json?: boolean };
+export type Flags = {
+  remote?: string;
+  folder?: string;
+  since?: string;
+  until?: string;
+  project?: string;
+  force?: boolean;
+  path?: string;
+  json?: boolean;
+};
 
 export type Command = {
   run: (args: string[], flags: Flags) => Promise<void>;

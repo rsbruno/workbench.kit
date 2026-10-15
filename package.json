@@ -7,10 +7,15 @@
     "workbench": "./dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "drizzle"
   ],
+  "engines": {
+    "node": ">=22.16"
+  },
   "scripts": {
     "dev": "bun run src/cli.ts",
+    "db:generate": "drizzle-kit generate",
     "build": "bun build src/cli.ts --target=node --outfile=dist/cli.js && chmod +x dist/cli.js",
     "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit",
@@ -26,6 +31,8 @@
     "@eslint/js": "9.39.5",
     "@semantic-release/exec": "^7.1.0",
     "@types/node": "^26.6.5",
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.4",
     "eslint": "9.39.5",
     "eslint-plugin-perfectionist": "5.10.1",
     "globals": "17.11.0",
@@ -33,6 +40,7 @@
     "prettier": "3.9.6",
     "semantic-release": "^25.0.9",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.67.0"
+    "typescript-eslint": "8.67.0",
+    "uuid": "^14.0.3"
   }
 }

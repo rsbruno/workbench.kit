@@ -1,7 +1,9 @@
 import type { Command } from "../lib/command";
 
-import { timesheetCommands } from "./timesheet";
+import { projectsCommands } from "./projects";
+import { commitsCommands } from "./commits";
 
 export const groups: Record<string, Command[]> = {
-  timesheet: timesheetCommands
+  projects: projectsCommands,
+  commits: commitsCommands
 };

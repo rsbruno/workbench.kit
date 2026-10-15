@@ -5,7 +5,7 @@ import js from "@eslint/js";
 
 export default tseslint.config(
   {
-    ignores: ["node_modules/**", "dist/**", ".husky/**", ".vscode/**"]
+    ignores: ["node_modules/**", "dist/**", "drizzle/**", ".husky/**", ".vscode/**"]
   },
   {
     rules: {

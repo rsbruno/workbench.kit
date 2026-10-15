@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792028798110,
+      "tag": "0000_gigantic_silverclaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1792029448710,
+      "tag": "0001_odd_famine",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792030057634,
+      "tag": "0002_unknown_the_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792061392802,
+      "tag": "0003_medical_ravenous",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792061972069,
+      "tag": "0004_mute_outlaw_kid",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1792062192143,
+      "tag": "0005_condemned_black_tom",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792062354917,
+      "tag": "0006_unusual_blizzard",
+      "breakpoints": true
+    }
+  ]
+}
