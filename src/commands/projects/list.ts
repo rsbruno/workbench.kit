@@ -7,9 +7,9 @@ export const list = defineCommand({
   run: async (_args, flags) => {
     const all = await withDb((db) => listProjects(db));
     if (flags.json) return void process.stdout.write(`${JSON.stringify(all, null, 2)}\n`);
-    if (!all.length) return info("nenhum projeto. crie com: workbench projects add <nome>");
+    if (!all.length) return info("no projects. create one with: workbench projects add <name>");
     summary(
-      `projetos · ${all.length}`,
+      `projects · ${all.length}`,
       all.map((p) => ({ detail: `${p.id} · ${p.createdAt}`, name: p.name }))
     );
   },

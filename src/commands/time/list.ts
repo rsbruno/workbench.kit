@@ -23,7 +23,7 @@ export const list = defineCommand({
       };
     });
     if (flags.json) return void process.stdout.write(`${JSON.stringify(times, null, 2)}\n`);
-    if (!times.length) return info("nenhum lançamento de hora. crie com: workbench time add");
+    if (!times.length) return info("no time entries. create one with: workbench time add");
 
     const length = (t: (typeof times)[number]) => t.endMinute - t.startMinute;
     const total = times.reduce((sum, t) => sum + length(t), 0);
@@ -44,7 +44,7 @@ export const list = defineCommand({
         }))
     );
     summary(
-      `horas · ${times.length} lançamentos · total ${formatDuration(total)}${extra ? ` (extras ${formatDuration(extra)})` : ""}`,
+      `hours · ${times.length} entries · total ${formatDuration(total)}${extra ? ` (overtime ${formatDuration(extra)})` : ""}`,
       rows
     );
   },

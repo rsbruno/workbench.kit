@@ -23,7 +23,7 @@ export function parseMonth(input: string | undefined): { month: number; year: nu
     return { year: now.getFullYear(), month: now.getMonth() };
   }
   const m = MONTH.exec(input.trim());
-  if (!m || Number(m[1]) < 1 || Number(m[1]) > 12) throw new Error("mês inválido: use MM/AAAA (ex.: 10/2026)");
+  if (!m || Number(m[1]) < 1 || Number(m[1]) > 12) throw new Error("invalid month: use MM/YYYY (e.g. 10/2026)");
   return { month: Number(m[1]) - 1, year: Number(m[2]) };
 }
 

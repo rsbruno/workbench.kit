@@ -15,20 +15,20 @@ export const add = defineCommand({
     const existing = all.find((d) => d.day.getTime() === day.getTime());
 
     if (existing) {
-      const message = `já existe um apontamento em ${br(day)} neste projeto`;
-      if (args[0]) throw new Error(`${message}; use update para editar`);
-      if (!(await askConfirm(`${message}. Editar?`, true))) return info("cancelado");
+      const message = `a daily already exists on ${br(day)} in this project`;
+      if (args[0]) throw new Error(`${message}; use update to edit it`);
+      if (!(await askConfirm(`${message}. Edit it?`, true))) return info("cancelled");
       const content = await resolveContent(flags, existing.content);
       const result = await withDb((db) => updateDaily(db, existing, content));
       if (!result.changed) return info("nada mudou");
-      return summary("apontamento atualizado", dailyRows(result.daily, project));
+      return summary("daily updated", dailyRows(result.daily, project));
     }
 
     const content = await resolveContent(flags);
     const daily = await withDb((db) => createDaily(db, project.id, day, content));
-    summary("apontamento criado", dailyRows(daily, project));
+    summary("daily created", dailyRows(daily, project));
   },
   description:
-    "create the daily of a day in a project: add [DD/MM/AAAA] [--project] [--text] (picking a taken day offers to edit it)",
+    "create the daily of a day in a project: add [DD/MM/YYYY] [--project] [--text] (picking a taken day offers to edit it)",
   name: "add"
 });

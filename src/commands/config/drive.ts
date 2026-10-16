@@ -4,7 +4,7 @@ import { info, warn } from "../../ui/summary";
 import { askText } from "../../ui/prompt";
 import { connect } from "../../lib/drive";
 
-const required = (label: string) => (value: string) => (value ? undefined : `${label} é obrigatório`);
+const required = (label: string) => (value: string) => (value ? undefined : `${label} is required`);
 
 export const drive = defineCommand({
   run: async (_args, flags) => {
@@ -12,11 +12,11 @@ export const drive = defineCommand({
 
     if (flags.disconnect) {
       writeConfig({ drive: undefined });
-      return info(current ? "Google Drive desconectado" : "o Google Drive já estava desconectado");
+      return info(current ? "Google Drive disconnected" : "Google Drive was already disconnected");
     }
 
-    if (current) info(`conectado como ${current.email ?? "(conta sem e-mail)"}; vou reconectar`);
-    else info("crie um OAuth client do tipo Desktop em console.cloud.google.com (API do Drive ativada) e informe as chaves");
+    if (current) info(`connected as ${current.email ?? "(account without e-mail)"}; reconnecting`);
+    else info("create a Desktop OAuth client at console.cloud.google.com (with the Drive API enabled) and enter its keys");
 
     const clientId =
       flags.client ??
@@ -27,9 +27,9 @@ export const drive = defineCommand({
       process.env.WORKBENCH_GOOGLE_CLIENT_SECRET ??
       (await askText("Client secret", { validate: required("Client secret") }));
 
-    const result = await connect(clientId, clientSecret, (url) => warn(`abra no navegador para autorizar:\n${url}`));
+    const result = await connect(clientId, clientSecret, (url) => warn(`open this in the browser to authorize:\n${url}`));
     writeConfig({ drive: result });
-    info(`Google Drive conectado${result.email ? ` como ${result.email}` : ""}`);
+    info(`Google Drive connected${result.email ? ` as ${result.email}` : ""}`);
   },
   description: "connect the Google account that stores backups: drive [--client id --secret secret] [--disconnect]",
   name: "drive"

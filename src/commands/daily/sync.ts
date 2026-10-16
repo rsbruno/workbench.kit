@@ -63,14 +63,17 @@ function wrap(text: string, width: number): string[] {
 
 async function writeByHand(day: Pending, draft: Draft): Promise<string | undefined> {
   if (!process.stdin.isTTY) {
-    warn(`${brDay(day.date)}: ${draft.note} (sem terminal, dia pulado)`);
+    warn(`${brDay(day.date)}: ${draft.note} (no terminal, day skipped)`);
     return undefined;
   }
   warn(`${brDay(day.date)}: ${draft.note}`);
-  const text = await askText(`Escreva a daily de ${brDay(day.date)} (${MIN_CHARS} a ${MAX_CHARS} caracteres; vazio pula o dia)`, {
-    validate: (v) => (v ? lengthError(v) : undefined),
-    initial: draft.initial
-  });
+  const text = await askText(
+    `Write the daily of ${brDay(day.date)} (${MIN_CHARS} to ${MAX_CHARS} characters; empty skips the day)`,
+    {
+      validate: (v) => (v ? lengthError(v) : undefined),
+      initial: draft.initial
+    }
+  );
   return text || undefined;
 }
 
@@ -87,17 +90,17 @@ function preview(reviewed: Reviewed[]) {
 async function generateAll(agent: Agent, project: Project, days: Pending[]): Promise<Draft[]> {
   const progress = spinner();
   let done = 0;
-  progress.start(`Gerando com o ${agent} · 0/${days.length}`);
+  progress.start(`Generating with ${agent} · 0/${days.length}`);
   try {
     const drafts = await pool(days, CONCURRENCY, async (day) => {
       const draft = await draftDaily(agent, project.name, day.commits);
-      progress.message(`Gerando com o ${agent} · ${++done}/${days.length}`);
+      progress.message(`Generating with ${agent} · ${++done}/${days.length}`);
       return draft;
     });
-    progress.stop(`${plural(days.length, "dia processado", "dias processados")} pelo ${agent}`);
+    progress.stop(`${plural(days.length, "day processed", "days processed")} by ${agent}`);
     return drafts;
   } catch (error) {
-    progress.error("Não foi possível gerar as dailies");
+    progress.error("Could not generate the dailies");
     throw error;
   }
 }
@@ -117,17 +120,17 @@ export const sync = defineCommand({
     });
 
     if (!commits.length) {
-      return info(`nenhum commit salvo de ${label(period)} para "${project.name}". Rode antes: workbench commits explore`);
+      return info(`no saved commits for ${label(period)} in "${project.name}". Run first: workbench commits explore`);
     }
     const days = pendingDays(commits, existing);
-    if (!days.length) return info(`todas as dailies de ${label(period)} já existem em "${project.name}"`);
+    if (!days.length) return info(`all dailies of ${label(period)} already exist in "${project.name}"`);
 
     summary(
-      `${plural(days.length, "dia sem daily", "dias sem daily")} · ${label(period)}`,
+      `${plural(days.length, "day without a daily", "days without a daily")} · ${label(period)}`,
       days.map((d) => ({ detail: plural(d.commits.length, "commit", "commits"), name: brDay(d.date) }))
     );
 
-    info(`enviando os commits de ${plural(days.length, "dia", "dias")} ao ${agent}: as mensagens de commit saem da sua máquina`);
+    info(`sending the commits of ${plural(days.length, "day", "days")} to ${agent}: the commit messages leave your machine`);
     const drafts = await generateAll(agent, project, days);
 
     const reviewed: Reviewed[] = [];
@@ -136,7 +139,7 @@ export const sync = defineCommand({
       const text = draft.text ?? (await writeByHand(day, draft));
       if (text) reviewed.push({ date: day.date, text });
     }
-    if (!reviewed.length) return info("nenhuma daily para gravar");
+    if (!reviewed.length) return info("no daily to save");
 
     preview(reviewed);
     const ask = `Gravar ${plural(reviewed.length, "daily", "dailies")} em "${project.name}"?`;
@@ -150,14 +153,14 @@ export const sync = defineCommand({
       )
     );
     summary("dailies gravadas", [
-      { detail: project.name, name: "projeto" },
-      { detail: label(period), name: "mês" },
+      { detail: project.name, name: "project" },
+      { detail: label(period), name: "month" },
       { detail: String(created), name: "criadas" },
-      ...(skipped ? [{ detail: String(skipped), name: "já existiam" }] : []),
+      ...(skipped ? [{ detail: String(skipped), name: "already existed" }] : []),
       ...(reviewed.length < days.length ? [{ detail: String(days.length - reviewed.length), name: "puladas" }] : [])
     ]);
   },
   description:
-    "fill the days without a daily from your saved commits: sync [--project] [--month MM/AAAA] (the AI agent comes from workbench config agent)",
+    "fill the days without a daily from your saved commits: sync [--project] [--month MM/YYYY] (the AI agent comes from workbench config agent)",
   name: "sync"
 });

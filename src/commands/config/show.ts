@@ -10,13 +10,13 @@ export const show = defineCommand({
       return void process.stdout.write(
         `${JSON.stringify({ file: configFile(), ...config, drive: config.drive ? { email: config.drive.email, connected: true } : undefined }, null, 2)}\n`
       );
-    summary("configuração", [
-      { detail: config.agent ?? "(não definido)", name: "agente" },
+    summary("settings", [
+      { detail: config.agent ?? "(not set)", name: "agent" },
       {
-        detail: config.drive ? `conectado${config.drive.email ? ` (${config.drive.email})` : ""}` : "(não conectado)",
+        detail: config.drive ? `connected${config.drive.email ? ` (${config.drive.email})` : ""}` : "(not connected)",
         name: "drive"
       },
-      { detail: configFile(), name: "arquivo" }
+      { detail: configFile(), name: "file" }
     ]);
   },
   description: "print the current settings and where they are saved (--json for raw output)",

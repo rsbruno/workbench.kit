@@ -31,11 +31,11 @@ async function loggedThatDay(db: Db, daily: Daily): Promise<Range[]> {
 
 function assertFree(input: TimeInput, logged: Range[], exceptId?: string) {
   const { startMinute: start, endMinute: end } = input;
-  if (start < 0 || end > DAY_MINUTES || end <= start) throw new Error("a hora de fim deve ser depois da hora de início");
+  if (start < 0 || end > DAY_MINUTES || end <= start) throw new Error("the end time must be after the start time");
 
   const clash = logged.find((t) => t.id !== exceptId && t.start < end && t.end > start);
   if (clash) {
-    throw new Error(`esse horário conflita com outro lançamento do dia (${formatClock(clash.start)}–${formatClock(clash.end)})`);
+    throw new Error(`this time overlaps another entry of the day (${formatClock(clash.start)}–${formatClock(clash.end)})`);
   }
 }
 

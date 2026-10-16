@@ -24,11 +24,11 @@ export const restore = defineCommand({
       let id = given;
       if (!id) {
         const files = await task("listing backups", "backups listed", () => listBackups(token));
-        if (!files.length) throw new Error("nenhum backup no Drive; rode workbench backup run");
+        if (!files.length) throw new Error("no backups in Drive; run workbench backup run");
         id = await selectOne(
-          "Qual backup restaurar?",
+          "Which backup do you want to restore?",
           files.map((f) => ({
-            detail: `${new Date(f.createdTime).toLocaleString("pt-BR")}  ${formatBytes(f.size)}`,
+            detail: `${new Date(f.createdTime).toLocaleString("en-GB")}  ${formatBytes(f.size)}`,
             name: f.name,
             value: f.id
           }))
@@ -38,13 +38,16 @@ export const restore = defineCommand({
       label = id;
     }
 
-    if (!flags.yes && !(await askConfirm("Isto substitui o banco atual pelo backup, sem cópia do que existe hoje. Continuar?"))) {
-      throw new Error("restauração cancelada");
+    if (
+      !flags.yes &&
+      !(await askConfirm("This replaces the current database with the backup, with no copy of what exists today. Continue?"))
+    ) {
+      throw new Error("restore cancelled");
     }
     const { target } = await task("restoring the database", "database restored", () => restoreDatabase(content));
     summary("restore", [
-      { name: "origem", detail: label },
-      { detail: target, name: "banco" }
+      { name: "source", detail: label },
+      { name: "database", detail: target }
     ]);
   },
   description:

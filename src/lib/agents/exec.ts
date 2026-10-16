@@ -28,12 +28,12 @@ export function exec(command: string, args: string[], { timeoutMs, input, cwd }:
     child.on("error", (error) => {
       clearTimeout(timer);
       if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-        reject(new AgentMissingError(`"${command}" não foi encontrado no PATH`));
+        reject(new AgentMissingError(`"${command}" was not found in PATH`));
       } else reject(error);
     });
     child.on("close", (code) => {
       clearTimeout(timer);
-      if (timedOut) reject(new AgentError(`"${command}" não respondeu em ${Math.round(timeoutMs / 1000)}s`));
+      if (timedOut) reject(new AgentError(`"${command}" did not answer within ${Math.round(timeoutMs / 1000)}s`));
       else resolve({ stdout, stderr, code });
     });
 

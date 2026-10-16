@@ -12,7 +12,7 @@ export function parsePtBrDate(input: string): string | null {
 
 export function dateError(input: string): string | undefined {
   if (!input.trim()) return undefined;
-  return parsePtBrDate(input) ? undefined : "data inválida: use DD/MM/AAAA, uma data real e não futura";
+  return parsePtBrDate(input) ? undefined : "invalid date: use DD/MM/YYYY, a real date that is not in the future";
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");

@@ -23,7 +23,7 @@ function isDrive(value: unknown): value is DriveConfig {
 }
 
 function invalid(file: string, reason: string): never {
-  throw new Error(`configuração inválida em ${file}: ${reason}`);
+  throw new Error(`invalid configuration in ${file}: ${reason}`);
 }
 
 export function readConfig(): Config {
@@ -40,16 +40,17 @@ export function readConfig(): Config {
   try {
     data = JSON.parse(raw);
   } catch {
-    return invalid(file, "o arquivo não é um JSON válido (corrija ou apague o arquivo)");
+    return invalid(file, "the file is not valid JSON (fix or delete it)");
   }
-  if (!data || typeof data !== "object" || Array.isArray(data)) return invalid(file, "esperava um objeto JSON");
+  if (!data || typeof data !== "object" || Array.isArray(data)) return invalid(file, "expected a JSON object");
 
   const { lastBackup, agent, drive } = data as Record<string, unknown>;
   if (agent !== undefined && !isAgent(agent))
-    return invalid(file, `agente "${String(agent)}" desconhecido (use ${AGENTS.join(" ou ")})`);
-  if (drive !== undefined && !isDrive(drive)) return invalid(file, "a seção drive está incompleta (rode workbench config drive)");
+    return invalid(file, `unknown agent "${String(agent)}" (use ${AGENTS.join(" or ")})`);
+  if (drive !== undefined && !isDrive(drive))
+    return invalid(file, "the drive section is incomplete (run workbench config drive)");
   if (lastBackup !== undefined && (typeof lastBackup !== "string" || Number.isNaN(Date.parse(lastBackup))))
-    return invalid(file, "lastBackup não é uma data válida");
+    return invalid(file, "lastBackup is not a valid date");
   return {
     ...(agent === undefined ? {} : { agent }),
     ...(drive === undefined ? {} : { drive }),
@@ -74,7 +75,7 @@ export function requireAgent(): Agent {
   const agent = readConfig().agent;
   if (!agent) {
     throw new Error(
-      "nenhum agente de IA configurado. Defina com: workbench config agent claude (ou codex), ou rode workbench config para escolher"
+      "no AI agent configured. Set one with: workbench config agent claude (or codex), or run workbench config to choose"
     );
   }
   return agent;
@@ -83,6 +84,6 @@ export function requireAgent(): Agent {
 /** Backup commands need a connected Drive account; stop with the way to connect. */
 export function requireDrive(): DriveConfig {
   const drive = readConfig().drive;
-  if (!drive) throw new Error("o Google Drive não está conectado. Conecte com: workbench config drive");
+  if (!drive) throw new Error("Google Drive is not connected. Connect with: workbench config drive");
   return drive;
 }

@@ -15,10 +15,10 @@ export function backupReminder(now = new Date()): string | undefined {
   try {
     if (!existsSync(join(stateDir(), dbFile()))) return undefined;
     const { lastBackup } = readConfig();
-    if (!lastBackup) return "você ainda não fez backup do banco. Rode: workbench backup run";
+    if (!lastBackup) return "you have not backed up the database yet. Run: workbench backup run";
     const days = Math.floor((now.getTime() - Date.parse(lastBackup)) / DAY_MS);
     if (days < BACKUP_MAX_AGE_DAYS) return undefined;
-    return `o último backup foi há ${days} dias. Rode: workbench backup run`;
+    return `the last backup was ${days} days ago. Run: workbench backup run`;
   } catch {
     return undefined;
   }

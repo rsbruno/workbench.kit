@@ -14,7 +14,7 @@ const MAX_PROMPT = 6000;
 function parseDailyAnswer(value: unknown): DailyAnswer {
   const answer = value as Partial<DailyAnswer> | null;
   if (!answer || typeof answer.daily !== "string" || typeof answer.hasContent !== "boolean") {
-    throw new AgentError("a resposta do agente não veio no formato esperado");
+    throw new AgentError("the agent's answer was not in the expected format");
   }
   return { hasContent: answer.hasContent, daily: answer.daily };
 }
@@ -23,7 +23,7 @@ export const countChars = (text: string) => [...text.trim()].length;
 
 export function lengthError(text: string): string | undefined {
   const size = countChars(text);
-  return size >= MIN_CHARS && size <= MAX_CHARS ? undefined : `tem ${size} caracteres; use de ${MIN_CHARS} a ${MAX_CHARS}`;
+  return size >= MIN_CHARS && size <= MAX_CHARS ? undefined : `has ${size} characters; use ${MIN_CHARS} to ${MAX_CHARS}`;
 }
 
 function commitLine(commit: MonthCommit): string {
@@ -77,11 +77,11 @@ export async function draftDaily(agent: Agent, project: string, commits: MonthCo
       if (error instanceof AgentMissingError) throw error;
       return { note: (error as Error).message, initial: last || undefined };
     }
-    if (!answer.hasContent) return { note: "os commits do dia não permitem relatar o que foi feito" };
+    if (!answer.hasContent) return { note: "the commits of the day do not allow reporting what was done" };
 
     last = answer.daily.trim();
     if (!lengthError(last)) return { text: last };
     prompt = `${base}\n\nSeu texto anterior tinha ${countChars(last)} caracteres. Reescreva mantendo o sentido, com ${MIN_CHARS} a ${MAX_CHARS} caracteres.`;
   }
-  return { note: `o agente não acertou o tamanho (${countChars(last)} caracteres)`, initial: last };
+  return { note: `the agent missed the length (${countChars(last)} characters)`, initial: last };
 }

@@ -19,12 +19,12 @@ export async function runCodex(options: ExecOptions, schema: JsonSchema): Promis
   const { stderr, code } = await exec("codex", args, options);
   if (code !== 0) {
     const detail = stderr.trim().split("\n").at(-1) ?? "";
-    throw new AgentError(`o Codex terminou com erro (código ${code})${detail ? `: ${detail.slice(0, 160)}` : ""}`);
+    throw new AgentError(`Codex finished with an error (code ${code})${detail ? `: ${detail.slice(0, 160)}` : ""}`);
   }
 
   try {
     return JSON.parse(await readFile(output, "utf8"));
   } catch {
-    throw new AgentError("o Codex não devolveu um JSON válido");
+    throw new AgentError("Codex did not return valid JSON");
   }
 }

@@ -14,22 +14,22 @@ import { bold, dim } from "../../ui/color";
 
 export type Entry = Proposal & { daily: Daily; skipped: boolean };
 
-const SOURCE: Record<Proposal["source"], string> = { fallback: "reserva", edited: "editado", agent: "agente" };
+const SOURCE: Record<Proposal["source"], string> = { fallback: "fallback", edited: "edited", agent: "agent" };
 
 const rangeOf = (block: Block) =>
-  `${formatClock(block.startMinute)}–${formatClock(block.endMinute)}${block.kind === TimeKind.OVERTIME ? " extra" : ""}`;
+  `${formatClock(block.startMinute)}–${formatClock(block.endMinute)}${block.kind === TimeKind.OVERTIME ? " overtime" : ""}`;
 
 /** What would be saved for the day (a skipped day, or one with no blocks, saves nothing). */
 export const willSave = (entry: Entry) => !entry.skipped && entry.blocks.length > 0;
 
 function totalLabel(blocks: Block[]) {
   const { regular, extra } = totalsOf(blocks);
-  return `${formatDuration(regular + extra)}${extra ? ` (${formatDuration(extra)} extra)` : ""}`;
+  return `${formatDuration(regular + extra)}${extra ? ` (${formatDuration(extra)} overtime)` : ""}`;
 }
 
 function describe(entry: Entry): string {
-  if (entry.skipped) return "pulado";
-  if (!entry.blocks.length) return "sem blocos (nada será gravado)";
+  if (entry.skipped) return "skipped";
+  if (!entry.blocks.length) return "no blocks (nothing will be saved)";
   return `${entry.blocks.map(rangeOf).join(" · ")} · ${totalLabel(entry.blocks)} · ${SOURCE[entry.source]}`;
 }
 
@@ -44,8 +44,8 @@ export function totalsOfEntries(entries: Entry[]) {
 }
 
 async function askBlock(current?: Block): Promise<Block> {
-  const startMinute = await askClock("Hora de início (HH:MM)", current?.startMinute);
-  const endMinute = await askClock("Hora de fim (HH:MM)", current?.endMinute, startMinute);
+  const startMinute = await askClock("Start time (HH:MM)", current?.startMinute);
+  const endMinute = await askClock("End time (HH:MM)", current?.endMinute, startMinute);
   const kind = await askKind(current?.kind);
   return { startMinute, endMinute, kind };
 }
@@ -53,18 +53,18 @@ async function askBlock(current?: Block): Promise<Block> {
 /** Applies an edit only when the day's blocks stay valid. */
 function change(entry: Entry, blocks: Block[]) {
   const error = validateBlocks(blocks);
-  if (error) return warn(`${error}; nada foi alterado`);
+  if (error) return warn(`${error}; nothing was changed`);
   entry.blocks = blocks;
   entry.source = "edited";
 }
 
 async function again(agent: Agent, entry: Entry) {
   const progress = spinner();
-  progress.start(`Pedindo de novo ao ${agent} · ${brDay(entry.date)}`);
+  progress.start(`Asking ${agent} again · ${brDay(entry.date)}`);
   try {
     const next = await estimateOne(agent, entry);
     Object.assign(entry, next, { skipped: false });
-    progress.stop("Nova estimativa recebida");
+    progress.stop("New estimate received");
   } catch (error) {
     progress.error((error as Error).message);
   }
@@ -77,22 +77,22 @@ async function editDay(agent: Agent, entry: Entry) {
     const last = commits.at(-1)!.authoredAt.slice(11, 16);
     note(
       [
-        `${bold(brDay(entry.date))}  ${dim(`${commits.length} commits · de ${first} a ${last} · âncoras ${anchors.first}h–${anchors.last}h`)}`,
-        ...(entry.blocks.length ? entry.blocks.map((b) => `  ${rangeOf(b)}`) : ["  (sem blocos)"]),
+        `${bold(brDay(entry.date))}  ${dim(`${commits.length} commits · from ${first} to ${last} · anchors ${anchors.first}h–${anchors.last}h`)}`,
+        ...(entry.blocks.length ? entry.blocks.map((b) => `  ${rangeOf(b)}`) : ["  (no blocks)"]),
         `  ${dim(`${SOURCE[entry.source]}: ${entry.reason}`)}`
       ].join("\n"),
-      entry.skipped ? "dia pulado" : "horas do dia"
+      entry.skipped ? "skipped day" : "hours of the day"
     );
 
     const changed = JSON.stringify(entry.blocks) !== JSON.stringify(entry.original.blocks);
-    const action = await selectOne<string>("O que fazer neste dia?", [
-      ...entry.blocks.map((b, i) => ({ name: `Editar ${rangeOf(b)}`, value: `edit:${i}` })),
-      { name: "Adicionar bloco", value: "add" },
-      ...(entry.blocks.length ? [{ name: "Remover bloco…", value: "remove" }] : []),
-      { detail: `${agent} estima só este dia`, name: "Pedir de novo ao agente", value: "again" },
-      ...(changed ? [{ name: "Voltar à proposta original", value: "restore" }] : []),
-      { name: entry.skipped ? "Reativar este dia" : "Pular este dia", value: "skip" },
-      { name: "Voltar à lista", value: "back" }
+    const action = await selectOne<string>("What do you want to do with this day?", [
+      ...entry.blocks.map((b, i) => ({ name: `Edit ${rangeOf(b)}`, value: `edit:${i}` })),
+      { name: "Add block", value: "add" },
+      ...(entry.blocks.length ? [{ name: "Remove block…", value: "remove" }] : []),
+      { detail: `${agent} estimates only this day`, name: "Ask the agent again", value: "again" },
+      ...(changed ? [{ name: "Back to the original proposal", value: "restore" }] : []),
+      { name: entry.skipped ? "Reactivate this day" : "Skip this day", value: "skip" },
+      { name: "Back to the list", value: "back" }
     ]);
 
     if (action === "back") return;
@@ -105,7 +105,7 @@ async function editDay(agent: Agent, entry: Entry) {
       entry.source = entry.original.source;
     } else if (action === "remove") {
       const which = await selectOne(
-        "Qual bloco remover?",
+        "Which block should be removed?",
         entry.blocks.map((b, i) => ({ name: rangeOf(b), value: i }))
       );
       change(entry, removeBlockAt(entry.blocks, which));
@@ -124,20 +124,20 @@ async function editDay(agent: Agent, entry: Entry) {
 export async function review(agent: Agent, entries: Entry[]): Promise<Entry[] | undefined> {
   for (;;) {
     const { regular, extra, days } = totalsOfEntries(entries);
-    const choice = await selectOne<string>("Revisar as horas", [
+    const choice = await selectOne<string>("Review the hours", [
       {
-        detail: `${formatDuration(regular + extra)}${extra ? ` (${formatDuration(extra)} extra)` : ""}`,
-        name: `Gravar ${days} ${days === 1 ? "dia" : "dias"}`,
+        detail: `${formatDuration(regular + extra)}${extra ? ` (${formatDuration(extra)} overtime)` : ""}`,
+        name: `Save ${days} ${days === 1 ? "day" : "days"}`,
         value: "save"
       },
-      { name: "Cancelar", value: "cancel" },
+      { value: "cancel", name: "Cancel" },
       ...entries.map((entry, i) => ({ detail: describe(entry), name: brDay(entry.date), value: `day:${i}` }))
     ]);
 
     if (choice === "cancel") return undefined;
     if (choice === "save") {
       if (days) return entries;
-      info("não há nenhum dia para gravar; abra um dia para ajustar ou cancele");
+      info("there is no day to save; open a day to adjust it or cancel");
       continue;
     }
     await editDay(agent, entries[Number(choice.slice(4))]!);

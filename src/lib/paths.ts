@@ -18,7 +18,7 @@ export function runtimeEnv(): Env {
   const forced = process.env.WORKBENCH_ENV?.trim().toLowerCase();
   if (forced) {
     if (forced !== "dev" && forced !== "prod") {
-      throw new Error(`WORKBENCH_ENV deve ser "dev" ou "prod" (recebi "${process.env.WORKBENCH_ENV}")`);
+      throw new Error(`WORKBENCH_ENV must be "dev" or "prod" (got "${process.env.WORKBENCH_ENV}")`);
     }
     return forced;
   }

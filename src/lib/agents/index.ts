@@ -16,8 +16,8 @@ const DEFAULT_TIMEOUT_MS = 120_000;
 const timeoutMs = () => Number(process.env.WORKBENCH_AGENT_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS;
 
 const HINTS: Record<Agent, string> = {
-  codex: "instale o Codex CLI e entre com `codex login`",
-  claude: "instale o Claude Code e entre com `claude`"
+  codex: "install the Codex CLI and sign in with `codex login`",
+  claude: "install Claude Code and sign in with `claude`"
 };
 
 /**
@@ -31,7 +31,7 @@ export async function askAgent(agent: Agent, prompt: string, schema: JsonSchema)
     return agent === "claude" ? await runClaude(options, schema) : await runCodex(options, schema);
   } catch (error) {
     if (error instanceof AgentMissingError)
-      throw new AgentMissingError(`${error.message}: ${HINTS[agent]}, ou escolha outro agente com workbench config agent`);
+      throw new AgentMissingError(`${error.message}: ${HINTS[agent]}, or choose another agent with workbench config agent`);
     throw error;
   } finally {
     await rm(dir, { recursive: true, force: true });

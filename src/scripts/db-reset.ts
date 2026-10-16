@@ -11,4 +11,4 @@ for (const path of [file, `${file}-wal`, `${file}-shm`, `${file}-journal`]) {
   await rm(path, { force: true });
 }
 
-process.stdout.write(found ? `banco de dev removido: ${file}\n` : `nenhum banco de dev em ${file}\n`);
+process.stdout.write(found ? `dev database removed: ${file}\n` : `no dev database at ${file}\n`);

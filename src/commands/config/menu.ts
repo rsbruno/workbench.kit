@@ -7,15 +7,15 @@ import { drive } from "./drive";
 import { show } from "./show";
 
 const options: { command: Command; detail: string; name: string }[] = [
-  { detail: "claude ou codex", name: "Agente de IA", command: agent },
-  { detail: "conta que guarda os backups", name: "Google Drive", command: drive },
-  { detail: "valores atuais e o arquivo", name: "Ver configuração", command: show }
+  { detail: "claude or codex", name: "AI agent", command: agent },
+  { detail: "account that stores the backups", name: "Google Drive", command: drive },
+  { detail: "current values and the file", name: "Show settings", command: show }
 ];
 
 export const menu = defineCommand({
   run: async (_args, flags) => {
     const picked = await selectOne(
-      "O que configurar?",
+      "What do you want to configure?",
       options.map(({ detail, name }, value) => ({ detail, value, name }))
     );
     await options[picked]!.command.run([], flags);

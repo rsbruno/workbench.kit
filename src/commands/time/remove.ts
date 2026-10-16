@@ -9,16 +9,16 @@ import { withDb } from "../../db";
 export const remove = defineCommand({
   run: (args, flags) =>
     withDb(async (db) => {
-      const { daily } = await resolveDaily(db, flags, args[0], "De qual daily remover as horas?");
-      const time = await pickTime(db, daily, "Qual lançamento remover?");
+      const { daily } = await resolveDaily(db, flags, args[0], "Which daily should the hours be removed from?");
+      const time = await pickTime(db, daily, "Which entry should be removed?");
       const label = `${rangeOf(time)} de ${br(daily.day)}`;
-      if (!flags.force && !(await askConfirm(`Remover o lançamento de ${label}? Isso não pode ser desfeito.`))) {
+      if (!flags.force && !(await askConfirm(`Remove the entry of ${label}? This cannot be undone.`))) {
         return info("cancelado");
       }
       await deleteTime(db, time.id);
-      info(`lançamento de ${label} removido`);
+      info(`entry of ${label} removed`);
     }),
-  description: "delete a time entry: remove [DD/MM/AAAA] [--project] (--force skips the confirmation)",
+  description: "delete a time entry: remove [DD/MM/YYYY] [--project] (--force skips the confirmation)",
   aliases: ["rm"],
   name: "remove"
 });

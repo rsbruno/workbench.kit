@@ -7,7 +7,7 @@ import { brDay } from "../lib/repo/dates";
 
 export function cleanContent(input: string): string {
   const content = input.trim();
-  if (!content) throw new Error("o texto do apontamento é obrigatório");
+  if (!content) throw new Error("the daily text is required");
   return content;
 }
 
@@ -28,7 +28,7 @@ export const findDaily = async (db: Db, projectId: string, day: Date): Promise<D
 export async function createDaily(db: Db, projectId: string, day: Date, content: string): Promise<Daily> {
   const text = cleanContent(content);
   if (await findDaily(db, projectId, day)) {
-    throw new Error(`já existe um apontamento em ${brDay(day)} neste projeto; use update para editar`);
+    throw new Error(`a daily already exists on ${brDay(day)} in this project; use update to edit it`);
   }
   const [row] = await db.insert(dailies).values({ content: text, projectId, day }).returning();
   return row!;

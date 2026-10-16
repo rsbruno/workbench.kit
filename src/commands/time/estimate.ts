@@ -94,7 +94,7 @@ export function buildPrompt(days: DayInput[], anchors: Map<string, Anchors>, ref
 
 function parseAnswers(value: unknown): Answer[] {
   const days = (value as { days?: unknown } | null)?.days;
-  if (!Array.isArray(days)) throw new AgentError("a resposta do agente não veio no formato esperado");
+  if (!Array.isArray(days)) throw new AgentError("the agent's answer was not in the expected format");
   return days.flatMap((entry): Answer[] => {
     const e = entry as Partial<Answer> | null;
     if (!e || typeof e.date !== "string" || typeof e.startHour !== "number" || typeof e.endHour !== "number") return [];
@@ -146,8 +146,8 @@ export async function estimateDays(agent: Agent, days: DayInput[], progress?: Pr
       for (const day of chunk) {
         const answer = answers.find((a) => a.date === day.key);
         const a = anchors.get(day.key)!;
-        const problem = answer ? validateEstimate(answer, a) : "o dia ficou de fora da resposta";
-        if (answer && !problem) done.set(day.key, proposal(day, a, answer, answer.reason || "estimado pelo agente", "agent"));
+        const problem = answer ? validateEstimate(answer, a) : "the day was left out of the answer";
+        if (answer && !problem) done.set(day.key, proposal(day, a, answer, answer.reason || "estimated by the agent", "agent"));
         else failed.set(day.key, problem!);
       }
       progress?.(done.size, days.length);

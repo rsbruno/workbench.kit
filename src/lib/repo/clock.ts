@@ -5,8 +5,8 @@ export const TimeKind = { OVERTIME: 2, REGULAR: 1 } as const;
 export type TimeKind = (typeof TimeKind)[keyof typeof TimeKind];
 
 export const KIND_LABEL: Record<TimeKind, string> = {
-  [TimeKind.OVERTIME]: "hora extra",
-  [TimeKind.REGULAR]: "hora comum"
+  [TimeKind.OVERTIME]: "overtime",
+  [TimeKind.REGULAR]: "regular"
 };
 
 const CLOCK = /^(\d{1,2})(?:[:h](\d{2})?)?$/;
@@ -19,7 +19,7 @@ export function parseClock(input: string): number | null {
 }
 
 export const clockError = (input: string) =>
-  parseClock(input) === null ? "hora inválida: use HH:MM (ex.: 09:00, 9h30 ou 14)" : undefined;
+  parseClock(input) === null ? "invalid time: use HH:MM (e.g. 09:00, 9h30 or 14)" : undefined;
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -40,9 +40,9 @@ export function parseKind(input: string): TimeKind | null {
 }
 
 export const SHIFTS = [
-  { key: "morning", label: "manhã", end: 12 * 60, start: 0 },
-  { key: "afternoon", label: "tarde", start: 12 * 60, end: 18 * 60 },
-  { end: DAY_MINUTES, label: "noite", start: 18 * 60, key: "night" }
+  { label: "morning", key: "morning", end: 12 * 60, start: 0 },
+  { label: "afternoon", key: "afternoon", start: 12 * 60, end: 18 * 60 },
+  { end: DAY_MINUTES, label: "night", start: 18 * 60, key: "night" }
 ] as const;
 
 export type Shift = (typeof SHIFTS)[number];
