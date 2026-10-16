@@ -3,10 +3,12 @@ import type { Command } from "../../lib/command";
 import { defineCommand } from "../../lib/command";
 import { selectOne } from "../../ui/prompt";
 import { agent } from "./agent";
+import { drive } from "./drive";
 import { show } from "./show";
 
 const options: { command: Command; detail: string; name: string }[] = [
   { detail: "claude ou codex", name: "Agente de IA", command: agent },
+  { detail: "conta que guarda os backups", name: "Google Drive", command: drive },
   { detail: "valores atuais e o arquivo", name: "Ver configuração", command: show }
 ];
 

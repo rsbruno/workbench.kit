@@ -3,12 +3,14 @@ import { intro, outro } from "@clack/prompts";
 import { parseArgs } from "node:util";
 
 import { topLevel, defaults, groups } from "./commands";
+import { backupReminder } from "./lib/backup-reminder";
 import { findCommand } from "./lib/command";
 import { header } from "./ui/header";
+import { warn } from "./ui/summary";
 import { pkg } from "./lib/pkg";
 
 const FLAGS_HELP =
-  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --out file (timesheet pdf|xlsx|csv)   --month MM/AAAA (daily sync)   --start/--end HH:MM --type comum|extra (time)   -v, --version";
+  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --out file (timesheet pdf|xlsx|csv)   --month MM/AAAA (daily sync)   --start/--end HH:MM --type comum|extra (time)   --file <id|path> --yes --local (backup)   --client/--secret/--disconnect (config drive)   -v, --version";
 
 function help() {
   header();
@@ -29,9 +31,14 @@ function parse() {
         version: { type: "boolean", short: "v" },
         force: { type: "boolean", short: "f" },
         help: { type: "boolean", short: "h" },
+        yes: { type: "boolean", short: "y" },
+        disconnect: { type: "boolean" },
         project: { type: "string" },
         folder: { type: "string" },
         remote: { type: "string" },
+        local: { type: "boolean" },
+        client: { type: "string" },
+        secret: { type: "string" },
         start: { type: "string" },
         since: { type: "string" },
         until: { type: "string" },
@@ -40,6 +47,7 @@ function parse() {
         type: { type: "string" },
         text: { type: "string" },
         path: { type: "string" },
+        file: { type: "string" },
         out: { type: "string" },
         end: { type: "string" }
       },
@@ -74,6 +82,8 @@ try {
   if (!quiet) {
     header();
     intro(direct ? `workbench ${command.name}` : `workbench ${group} ${command.name}`);
+    const reminder = group === "backup" ? undefined : backupReminder();
+    if (reminder) warn(reminder);
   }
   await command.run(rest, values);
   if (!quiet) outro("done");

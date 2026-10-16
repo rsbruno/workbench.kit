@@ -115,3 +115,5 @@ export function documentsDir(): string {
 const appDir = () => join(documentsDir(), APP_FOLDER);
 
 export const timesheetsDir = () => join(appDir(), "timesheets");
+
+export const backupsDir = () => join(appDir(), "backups");

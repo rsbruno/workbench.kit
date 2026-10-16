@@ -13,6 +13,12 @@ export type Flags = {
   text?: string;
   month?: string;
   out?: string;
+  yes?: boolean;
+  file?: string;
+  local?: boolean;
+  client?: string;
+  secret?: string;
+  disconnect?: boolean;
 };
 
 export type Command = {
