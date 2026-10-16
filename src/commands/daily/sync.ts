@@ -2,80 +2,23 @@ import { spinner, note } from "@clack/prompts";
 
 import type { MonthCommit } from "../../db/commits";
 import type { Project } from "../../db/schema";
-import type { Flags } from "../../lib/command";
 
 import { lengthError, type Draft, countChars, draftDaily, MIN_CHARS, MAX_CHARS } from "./generate";
-import { askConfirm, selectOne, askText } from "../../ui/prompt";
+import { chooseMonth, dateOf, plural, keyOf, label } from "../month";
 import { createDailies, listDailies } from "../../db/dailies";
-import { type Agent, readConfig } from "../../lib/config";
-import { capitalize, MONTHS } from "../timesheet/style";
+import { requireAgent, type Agent } from "../../lib/config";
 import { summary, info, warn } from "../../ui/summary";
+import { askConfirm, askText } from "../../ui/prompt";
 import { listCommitsOfMonth } from "../../db/commits";
 import { defineCommand } from "../../lib/command";
-import { parseMonth } from "../timesheet/data";
 import { brDay } from "../../lib/repo/dates";
 import { bold, dim } from "../../ui/color";
 import { resolveProject } from "./shared";
 import { withDb } from "../../db";
 
 const CONCURRENCY = 3;
-const MONTH_CHOICES = 12;
-const OTHER = "other";
-
-type Month = { month: number; year: number };
 type Pending = { commits: MonthCommit[]; date: Date; key: string };
 type Reviewed = { date: Date; text: string };
-
-const pad = (n: number) => String(n).padStart(2, "0");
-const keyOf = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-const dateOf = (key: string) => {
-  const [year, month, day] = key.split("-").map(Number);
-  return new Date(year!, month! - 1, day!);
-};
-const label = ({ month, year }: Month) => `${capitalize(MONTHS[month]!)}/${year}`;
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
-async function chooseMonth(flags: Flags): Promise<Month> {
-  if (flags.month?.trim()) return parseMonth(flags.month);
-
-  const now = new Date();
-  const recent = Array.from({ length: MONTH_CHOICES }, (_, i) => {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    return { year: date.getFullYear(), month: date.getMonth() };
-  });
-  const picked = await selectOne("Mês de referência", [
-    ...recent.map((m) => ({
-      detail: m.year === now.getFullYear() && m.month === now.getMonth() ? "mês atual" : undefined,
-      value: `${pad(m.month + 1)}/${m.year}`,
-      name: label(m)
-    })),
-    { name: "Outro mês…", value: OTHER }
-  ]);
-  if (picked !== OTHER) return parseMonth(picked);
-  return parseMonth(
-    await askText("Mês de referência (MM/AAAA)", {
-      validate: (v) => {
-        try {
-          parseMonth(v || undefined);
-          return v ? undefined : "informe o mês";
-        } catch (e) {
-          return (e as Error).message;
-        }
-      }
-    })
-  );
-}
-
-/** The agent only comes from the settings; there is no prompt for it here. */
-function configuredAgent(): Agent {
-  const agent = readConfig().agent;
-  if (!agent) {
-    throw new Error(
-      `nenhum agente de IA configurado. Defina com: workbench config agent claude (ou codex), ou rode workbench config para escolher`
-    );
-  }
-  return agent;
-}
 
 function pendingDays(commits: MonthCommit[], existing: Set<string>): Pending[] {
   const byDay = new Map<string, MonthCommit[]>();
@@ -161,7 +104,7 @@ async function generateAll(agent: Agent, project: Project, days: Pending[]): Pro
 
 export const sync = defineCommand({
   run: async (_args, flags) => {
-    const agent = configuredAgent();
+    const agent = requireAgent();
     const { existing, project, commits, period } = await withDb(async (db) => {
       const project = await resolveProject(db, flags);
       const period = await chooseMonth(flags);

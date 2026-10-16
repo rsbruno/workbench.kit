@@ -9,3 +9,6 @@ export const DAILY_SCHEMA = {
   additionalProperties: false,
   type: "object"
 } as const;
+
+/** A JSON Schema object handed to the agent CLI. */
+export type JsonSchema = Record<string, unknown>;

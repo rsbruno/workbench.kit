@@ -18,19 +18,29 @@ export async function countTimes(db: Db, dailyId: string): Promise<number> {
   return (await listTimes(db, [dailyId])).length;
 }
 
-async function assertValid(db: Db, daily: Daily, input: TimeInput, exceptId?: string) {
-  const { startMinute: start, endMinute: end } = input;
-  if (start < 0 || end > DAY_MINUTES || end <= start) throw new Error("a hora de fim deve ser depois da hora de início");
+type Range = { start: number; end: number; id?: string };
 
-  const sameDay = await db
+/** Every time already logged on the same day, across all projects. */
+async function loggedThatDay(db: Db, daily: Daily): Promise<Range[]> {
+  return db
     .select({ start: timeEntries.startMinute, end: timeEntries.endMinute, id: timeEntries.id })
     .from(timeEntries)
     .innerJoin(dailies, eq(timeEntries.dailyId, dailies.id))
     .where(eq(dailies.day, daily.day));
-  const clash = sameDay.find((t) => t.id !== exceptId && t.start < end && t.end > start);
+}
+
+function assertFree(input: TimeInput, logged: Range[], exceptId?: string) {
+  const { startMinute: start, endMinute: end } = input;
+  if (start < 0 || end > DAY_MINUTES || end <= start) throw new Error("a hora de fim deve ser depois da hora de início");
+
+  const clash = logged.find((t) => t.id !== exceptId && t.start < end && t.end > start);
   if (clash) {
     throw new Error(`esse horário conflita com outro lançamento do dia (${formatClock(clash.start)}–${formatClock(clash.end)})`);
   }
+}
+
+async function assertValid(db: Db, daily: Daily, input: TimeInput, exceptId?: string) {
+  assertFree(input, await loggedThatDay(db, daily), exceptId);
 }
 
 export async function createTime(db: Db, daily: Daily, input: TimeInput): Promise<TimeEntry> {
@@ -40,6 +50,24 @@ export async function createTime(db: Db, daily: Daily, input: TimeInput): Promis
     .values({ ...input, description: input.description.trim(), dailyId: daily.id })
     .returning();
   return row!;
+}
+
+/**
+ * Logs several blocks of the same daily at once. Each block is checked against the day's existing times
+ * and against the others of the batch, and one INSERT statement keeps it atomic (the proxy driver has no
+ * transactions): either every block is saved or none is.
+ */
+export async function createTimes(db: Db, daily: Daily, inputs: TimeInput[]): Promise<TimeEntry[]> {
+  if (!inputs.length) return [];
+  const logged = await loggedThatDay(db, daily);
+  for (const input of inputs) {
+    assertFree(input, logged);
+    logged.push({ start: input.startMinute, end: input.endMinute });
+  }
+  return db
+    .insert(timeEntries)
+    .values(inputs.map((input) => ({ ...input, description: input.description.trim(), dailyId: daily.id })))
+    .returning();
 }
 
 export async function updateTime(
