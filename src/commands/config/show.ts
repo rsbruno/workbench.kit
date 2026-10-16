@@ -6,9 +6,16 @@ import { summary } from "../../ui/summary";
 export const show = defineCommand({
   run: async (_args, flags) => {
     const config = readConfig();
-    if (flags.json) return void process.stdout.write(`${JSON.stringify({ file: configFile(), ...config }, null, 2)}\n`);
+    if (flags.json)
+      return void process.stdout.write(
+        `${JSON.stringify({ file: configFile(), ...config, drive: config.drive ? { email: config.drive.email, connected: true } : undefined }, null, 2)}\n`
+      );
     summary("configuração", [
       { detail: config.agent ?? "(não definido)", name: "agente" },
+      {
+        detail: config.drive ? `conectado${config.drive.email ? ` (${config.drive.email})` : ""}` : "(não conectado)",
+        name: "drive"
+      },
       { detail: configFile(), name: "arquivo" }
     ]);
   },

@@ -48,7 +48,7 @@ function silenceSqliteWarning() {
     name === "warning" && /SQLite/.test(String((args[0] as Error)?.message)) ? false : emit(name, ...args);
 }
 
-async function openRaw(file: string): Promise<Raw> {
+export async function openRaw(file: string): Promise<Raw> {
   const bun = Boolean(process.versions.bun);
   if (!bun) silenceSqliteWarning();
   const mod = (await import(bun ? "bun:sqlite" : "node:sqlite")) as Driver;
@@ -64,14 +64,14 @@ function rowsOf(stmt: Stmt, params: unknown[]): unknown[][] {
 
 const migrationsFolder = () => join(packageRoot, "drizzle");
 
-function knownMigrations(): number {
+export function knownMigrations(): number {
   const journal = JSON.parse(readFileSync(join(migrationsFolder(), "meta", "_journal.json"), "utf8")) as {
     entries: unknown[];
   };
   return journal.entries.length;
 }
 
-function appliedMigrations(raw: Raw): number {
+export function appliedMigrations(raw: Raw): number {
   const created = raw.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = '__drizzle_migrations'").all();
   if (!created.length) return 0;
   const [row] = raw.prepare("SELECT COUNT(*) AS n FROM __drizzle_migrations").all() as { n: number }[];
