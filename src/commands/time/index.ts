@@ -2,7 +2,8 @@ import type { Command } from "../../lib/command";
 
 import { remove } from "./remove";
 import { update } from "./update";
+import { sync } from "./sync";
 import { list } from "./list";
 import { add } from "./add";
 
-export const timeCommands: Command[] = [add, list, update, remove];
+export const timeCommands: Command[] = [add, list, sync, update, remove];

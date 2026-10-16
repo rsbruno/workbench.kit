@@ -49,3 +49,14 @@ export function writeConfig(patch: Config): Config {
   renameSync(temp, file);
   return next;
 }
+
+/** The agent only comes from the settings; commands that need it stop with the way to set it. */
+export function requireAgent(): Agent {
+  const agent = readConfig().agent;
+  if (!agent) {
+    throw new Error(
+      "nenhum agente de IA configurado. Defina com: workbench config agent claude (ou codex), ou rode workbench config para escolher"
+    );
+  }
+  return agent;
+}

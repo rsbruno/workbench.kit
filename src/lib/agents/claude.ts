@@ -1,12 +1,13 @@
+import type { JsonSchema } from "./schema";
+
 import { type ExecOptions, AgentError, exec } from "./exec";
-import { DAILY_SCHEMA } from "./schema";
 
 type Envelope = { structured_output?: unknown; is_error?: boolean; subtype?: string; result?: string };
 
-export async function runClaude(options: ExecOptions): Promise<unknown> {
+export async function runClaude(options: ExecOptions, schema: JsonSchema): Promise<unknown> {
   const args = [
     ...["-p", "--tools", "", "--no-session-persistence"],
-    ...["--output-format", "json", "--json-schema", JSON.stringify(DAILY_SCHEMA)]
+    ...["--output-format", "json", "--json-schema", JSON.stringify(schema)]
   ];
   const { stderr, stdout, code } = await exec("claude", args, options);
 

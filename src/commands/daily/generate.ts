@@ -1,7 +1,7 @@
 import type { MonthCommit } from "../../db/commits";
 import type { Agent } from "../../lib/config";
 
-import { AgentMissingError, askAgent } from "../../lib/agents";
+import { AgentMissingError, type DailyAnswer, DAILY_SCHEMA, AgentError, askAgent } from "../../lib/agents";
 
 export const MIN_CHARS = 200;
 export const MAX_CHARS = 300;
@@ -10,6 +10,14 @@ const RETRIES = 2;
 const MAX_COMMITS = 40;
 const MAX_BODY = 240;
 const MAX_PROMPT = 6000;
+
+function parseDailyAnswer(value: unknown): DailyAnswer {
+  const answer = value as Partial<DailyAnswer> | null;
+  if (!answer || typeof answer.daily !== "string" || typeof answer.hasContent !== "boolean") {
+    throw new AgentError("a resposta do agente não veio no formato esperado");
+  }
+  return { hasContent: answer.hasContent, daily: answer.daily };
+}
 
 export const countChars = (text: string) => [...text.trim()].length;
 
@@ -64,7 +72,7 @@ export async function draftDaily(agent: Agent, project: string, commits: MonthCo
   for (let attempt = 0; attempt <= RETRIES; attempt++) {
     let answer;
     try {
-      answer = await askAgent(agent, prompt);
+      answer = parseDailyAnswer(await askAgent(agent, prompt, DAILY_SCHEMA));
     } catch (error) {
       if (error instanceof AgentMissingError) throw error;
       return { note: (error as Error).message, initial: last || undefined };

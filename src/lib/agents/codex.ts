@@ -1,19 +1,20 @@
 import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import { type ExecOptions, AgentError, exec } from "./exec";
-import { DAILY_SCHEMA } from "./schema";
+import type { JsonSchema } from "./schema";
 
-export async function runCodex(options: ExecOptions): Promise<unknown> {
+import { type ExecOptions, AgentError, exec } from "./exec";
+
+export async function runCodex(options: ExecOptions, schema: JsonSchema): Promise<unknown> {
   const dir = join(options.cwd, "codex");
   await mkdir(dir, { recursive: true });
-  const schema = join(dir, "schema.json");
+  const schemaFile = join(dir, "schema.json");
   const output = join(dir, "answer.json");
-  await writeFile(schema, JSON.stringify(DAILY_SCHEMA));
+  await writeFile(schemaFile, JSON.stringify(schema));
 
   const args = [
     ...["exec", "--skip-git-repo-check", "--sandbox", "read-only", "--ephemeral", "--color", "never"],
-    ...["--output-schema", schema, "-o", output, "-"]
+    ...["--output-schema", schemaFile, "-o", output, "-"]
   ];
   const { stderr, code } = await exec("codex", args, options);
   if (code !== 0) {
