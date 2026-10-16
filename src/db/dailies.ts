@@ -34,6 +34,23 @@ export async function createDaily(db: Db, projectId: string, day: Date, content:
   return row!;
 }
 
+export type NewDaily = { content: string; day: Date };
+
+/**
+ * Inserts several dailies at once. One INSERT statement is atomic in SQLite (the proxy driver has no
+ * transactions), and a day that already has a daily is left untouched.
+ */
+export async function createDailies(db: Db, projectId: string, items: NewDaily[]): Promise<{ created: number; skipped: number }> {
+  if (!items.length) return { created: 0, skipped: 0 };
+  const values = items.map(({ content, day }) => ({ content: cleanContent(content), projectId, day }));
+  const rows = await db
+    .insert(dailies)
+    .values(values)
+    .onConflictDoNothing({ target: [dailies.projectId, dailies.day] })
+    .returning({ id: dailies.id });
+  return { skipped: items.length - rows.length, created: rows.length };
+}
+
 export async function updateDaily(db: Db, current: Daily, content: string): Promise<{ changed: boolean; daily: Daily }> {
   const text = cleanContent(content);
   if (text === current.content) return { daily: current, changed: false };

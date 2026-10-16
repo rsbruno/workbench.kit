@@ -2,13 +2,13 @@
 import { intro, outro } from "@clack/prompts";
 import { parseArgs } from "node:util";
 
-import { topLevel, groups } from "./commands";
+import { topLevel, defaults, groups } from "./commands";
 import { findCommand } from "./lib/command";
 import { header } from "./ui/header";
 import { pkg } from "./lib/pkg";
 
 const FLAGS_HELP =
-  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --out file (timesheet pdf|xlsx|csv)   --start/--end HH:MM --type comum|extra (time)   -v, --version";
+  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --out file (timesheet pdf|xlsx|csv)   --month MM/AAAA (daily sync)   --start/--end HH:MM --type comum|extra (time)   -v, --version";
 
 function help() {
   header();
@@ -36,6 +36,7 @@ function parse() {
         since: { type: "string" },
         until: { type: "string" },
         json: { type: "boolean" },
+        month: { type: "string" },
         type: { type: "string" },
         text: { type: "string" },
         path: { type: "string" },
@@ -59,7 +60,8 @@ if (values.version) {
 
 const [group, action, ...rest] = positionals;
 const direct = group && !action ? findCommand(topLevel, group) : undefined;
-const command = direct ?? (group && action ? findCommand(groups[group] ?? [], action) : undefined);
+const name = action ?? (group && !direct && process.stdin.isTTY ? defaults[group] : undefined);
+const command = direct ?? (group && name ? findCommand(groups[group] ?? [], name) : undefined);
 
 if (values.help || !command) {
   help();
