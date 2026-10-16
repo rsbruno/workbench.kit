@@ -16,7 +16,7 @@ export const list = defineCommand({
       };
     });
     if (flags.json) return void process.stdout.write(`${JSON.stringify(all, null, 2)}\n`);
-    if (!all.length) return info("nenhum apontamento. crie com: workbench daily add");
+    if (!all.length) return info("no dailies. create one with: workbench daily add");
     summary(
       `apontamentos · ${all.length}`,
       all.map((e) => ({ detail: `${names.get(e.projectId) ?? "?"} · ${e.content.split("\n")[0]!}`, name: br(e.day) }))

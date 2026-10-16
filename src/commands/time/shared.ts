@@ -10,11 +10,11 @@ import { listTimes } from "../../db/times";
 export const rangeOf = (t: TimeEntry) => `${formatClock(t.startMinute)}–${formatClock(t.endMinute)}`;
 
 export const timeRows = (t: TimeEntry, daily: Daily, project: Project) => [
-  { detail: project.name, name: "projeto" },
+  { detail: project.name, name: "project" },
   { detail: br(daily.day), name: "daily" },
-  { detail: `${rangeOf(t)} (${formatDuration(t.endMinute - t.startMinute)})`, name: "horário" },
-  { detail: KIND_LABEL[t.kind], name: "tipo" },
-  { detail: t.description || "(vazio)", name: "descrição" },
+  { detail: `${rangeOf(t)} (${formatDuration(t.endMinute - t.startMinute)})`, name: "time" },
+  { detail: KIND_LABEL[t.kind], name: "type" },
+  { detail: t.description || "(empty)", name: "description" },
   { detail: t.id, name: "id" },
   { detail: t.createdAt, name: "criado em" },
   { name: "atualizado em", detail: t.updatedAt }
@@ -34,17 +34,17 @@ export function flagClock(name: string, value: string): number {
 
 export function flagKind(value: string): TimeKind {
   const kind = parseKind(value);
-  if (!kind) throw new Error('--type: use "comum" ou "extra"');
+  if (!kind) throw new Error('--type: use "regular" or "overtime"');
   return kind;
 }
 
 export async function askClock(label: string, initial?: number, after?: number): Promise<number> {
   const answer = await askText(label, {
     validate: (v) => {
-      if (!v) return "a hora é obrigatória";
+      if (!v) return "the time is required";
       const error = clockError(v);
       if (error || after === undefined) return error;
-      return parseClock(v)! > after ? undefined : "a hora de fim deve ser depois da hora de início";
+      return parseClock(v)! > after ? undefined : "the end time must be after the start time";
     },
     initial: initial === undefined ? undefined : formatClock(initial)
   });
@@ -53,7 +53,7 @@ export async function askClock(label: string, initial?: number, after?: number):
 
 export async function resolveDescription(flag: string | undefined, initial?: string): Promise<string> {
   if (flag !== undefined) return flag.trim();
-  return askText("Descrição (opcional)", { initial });
+  return askText("Description (optional)", { initial });
 }
 
 export function askKind(current?: TimeKind): Promise<TimeKind> {
@@ -62,12 +62,12 @@ export function askKind(current?: TimeKind): Promise<TimeKind> {
     { name: KIND_LABEL[TimeKind.OVERTIME], value: TimeKind.OVERTIME }
   ];
   if (current === TimeKind.OVERTIME) options.reverse();
-  return selectOne("Tipo de hora", options);
+  return selectOne("Type of hours", options);
 }
 
 export async function pickTime(db: Db, daily: Daily, message: string): Promise<TimeEntry> {
   const all = await listTimes(db, [daily.id]);
-  if (!all.length) throw new Error(`nenhum lançamento de hora na daily de ${br(daily.day)}`);
+  if (!all.length) throw new Error(`no time entries on the daily of ${br(daily.day)}`);
   if (all.length === 1) return all[0]!;
   const id = await selectOne(
     message,

@@ -7,8 +7,8 @@ import { withDb } from "../../db";
 export const update = defineCommand({
   run: (args, flags) =>
     withDb(async (db) => {
-      const { project, daily } = await resolveDaily(db, flags, args[0], "Em qual daily editar as horas?");
-      const time = await pickTime(db, daily, "Qual lançamento editar?");
+      const { project, daily } = await resolveDaily(db, flags, args[0], "Which daily should the hours be edited on?");
+      const time = await pickTime(db, daily, "Which entry should be edited?");
 
       const given = Boolean(flags.start?.trim() || flags.end?.trim() || flags.type?.trim() || flags.text !== undefined);
       let patch: TimePatch;
@@ -21,9 +21,9 @@ export const update = defineCommand({
         };
       } else {
         const kind = await askKind(time.kind);
-        const startMinute = await askClock("Hora de início (HH:MM)", time.startMinute);
+        const startMinute = await askClock("Start time (HH:MM)", time.startMinute);
         patch = {
-          endMinute: await askClock("Hora de fim (HH:MM)", time.endMinute, startMinute),
+          endMinute: await askClock("End time (HH:MM)", time.endMinute, startMinute),
           description: await resolveDescription(undefined, time.description),
           startMinute,
           kind
@@ -32,9 +32,9 @@ export const update = defineCommand({
 
       const result = await updateTime(db, daily, time, patch);
       if (!result.changed) return info("nada mudou");
-      summary("horas atualizadas", timeRows(result.time, daily, project));
+      summary("hours updated", timeRows(result.time, daily, project));
     }),
-  description: "edit a time entry: update [DD/MM/AAAA] [--project] [--start] [--end] [--type] [--text] (asks all when none)",
+  description: "edit a time entry: update [DD/MM/YYYY] [--project] [--start] [--end] [--type] [--text] (asks all when none)",
   aliases: ["edit"],
   name: "update"
 });

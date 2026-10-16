@@ -13,8 +13,8 @@ export type ProjectPatch = Partial<ProjectInput>;
 
 export function cleanName(input: string): string {
   const name = input.trim();
-  if (!name) throw new Error("o nome do projeto é obrigatório");
-  if (name.length > MAX_NAME) throw new Error(`o nome do projeto passa de ${MAX_NAME} caracteres`);
+  if (!name) throw new Error("the project name is required");
+  if (name.length > MAX_NAME) throw new Error(`the project name is longer than ${MAX_NAME} characters`);
   return name;
 }
 
@@ -24,7 +24,7 @@ async function unique<T>(name: string, run: () => Promise<T>): Promise<T> {
   } catch (e) {
     const error = e as Error & { cause?: Error };
     if (/UNIQUE constraint failed/i.test(`${error.message} ${error.cause?.message ?? ""}`)) {
-      throw new Error(`já existe um projeto chamado "${name}"`);
+      throw new Error(`a project named "${name}" already exists`);
     }
     throw e;
   }
@@ -50,7 +50,7 @@ export async function assertNameFree(db: Db, input: string, exceptId?: string) {
     .from(projects)
     .where(and(sql`lower(${projects.name}) = ${name.toLowerCase()}`, exceptId ? ne(projects.id, exceptId) : undefined))
     .get();
-  if (taken) throw new Error(`já existe um projeto chamado "${name}"`);
+  if (taken) throw new Error(`a project named "${name}" already exists`);
 }
 
 export async function createProject(db: Db, input: ProjectInput): Promise<Project> {
@@ -76,7 +76,7 @@ export async function updateProject(
   } catch (e) {
     if (!incomplete) throw e;
     throw new Error(
-      `${(e as Error).message}. O projeto "${current.name}" está incompleto: informe --path, --folder e --remote, ou rode update sem argumentos`
+      `${(e as Error).message}. The project "${current.name}" is incomplete: pass --path, --folder and --remote, or run update with no arguments`
     );
   }
   const changed = (["name", "path", "folderName", "remote"] as const).some((key) => next[key] !== current[key]);
@@ -116,7 +116,7 @@ export async function findProject(db: Db, ref: string): Promise<Project> {
       .where(like(projects.id, `${value}%`))
       .limit(2);
     if (matches.length === 1) return matches[0]!;
-    if (matches.length > 1) throw new Error(`"${ref}" corresponde a mais de um projeto; use o id completo ou o nome`);
+    if (matches.length > 1) throw new Error(`"${ref}" matches more than one project; use the full id or the name`);
   }
-  throw new Error(`projeto não encontrado: ${ref}`);
+  throw new Error(`project not found: ${ref}`);
 }

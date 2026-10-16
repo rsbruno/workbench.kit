@@ -24,8 +24,8 @@ export const run = defineCommand({
       writeFileSync(file, dump);
       markBackup();
       return summary("backup", [
-        { detail: formatBytes(dump.length), name: "tamanho" },
-        { name: "arquivo", detail: file }
+        { detail: formatBytes(dump.length), name: "size" },
+        { name: "file", detail: file }
       ]);
     }
 
@@ -35,8 +35,8 @@ export const run = defineCommand({
     markBackup();
     if (flags.json) return void process.stdout.write(`${JSON.stringify(uploaded, null, 2)}\n`);
     summary("backup", [
-      { detail: formatBytes(dump.length), name: "tamanho" },
-      { detail: uploaded.name, name: "arquivo" },
+      { detail: formatBytes(dump.length), name: "size" },
+      { detail: uploaded.name, name: "file" },
       { detail: uploaded.id, name: "id" }
     ]);
   },

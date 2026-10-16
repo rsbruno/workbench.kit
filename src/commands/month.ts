@@ -1,6 +1,5 @@
 import type { Flags } from "../lib/command";
 
-import { capitalize, MONTHS } from "./timesheet/style";
 import { selectOne, askText } from "../ui/prompt";
 import { parseMonth } from "./timesheet/data";
 
@@ -15,7 +14,8 @@ export const dateOf = (key: string) => {
   const [year, month, day] = key.split("-").map(Number);
   return new Date(year!, month! - 1, day!);
 };
-export const label = ({ month, year }: Month) => `${capitalize(MONTHS[month]!)}/${year}`;
+export const label = ({ month, year }: Month) =>
+  `${new Date(year, month, 1).toLocaleDateString("en-GB", { month: "long" })}/${year}`;
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 export async function chooseMonth(flags: Flags): Promise<Month> {
@@ -26,21 +26,21 @@ export async function chooseMonth(flags: Flags): Promise<Month> {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     return { year: date.getFullYear(), month: date.getMonth() };
   });
-  const picked = await selectOne("Mês de referência", [
+  const picked = await selectOne("Reference month", [
     ...recent.map((m) => ({
-      detail: m.year === now.getFullYear() && m.month === now.getMonth() ? "mês atual" : undefined,
+      detail: m.year === now.getFullYear() && m.month === now.getMonth() ? "current month" : undefined,
       value: `${pad(m.month + 1)}/${m.year}`,
       name: label(m)
     })),
-    { name: "Outro mês…", value: OTHER }
+    { name: "Another month…", value: OTHER }
   ]);
   if (picked !== OTHER) return parseMonth(picked);
   return parseMonth(
-    await askText("Mês de referência (MM/AAAA)", {
+    await askText("Reference month (MM/YYYY)", {
       validate: (v) => {
         try {
           parseMonth(v || undefined);
-          return v ? undefined : "informe o mês";
+          return v ? undefined : "enter the month";
         } catch (e) {
           return (e as Error).message;
         }

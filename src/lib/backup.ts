@@ -15,7 +15,7 @@ export const backupName = () => `workbench-${stamp()}.db.gz`;
 /** A consistent, gzipped copy of the live database (VACUUM INTO is safe with WAL and concurrent readers). */
 export async function dumpDatabase(): Promise<Buffer> {
   const source = await resolveDbPath();
-  if (!existsSync(source)) throw new Error(`não há banco para salvar em ${source}`);
+  if (!existsSync(source)) throw new Error(`there is no database to back up at ${source}`);
   const dir = mkdtempSync(join(tmpdir(), "workbench-dump-"));
   const copy = join(dir, "dump.db");
   const raw = await openRaw(source);
@@ -38,18 +38,18 @@ export async function validateDump(content: Buffer, dir: string): Promise<string
   try {
     data = content[0] === 0x1f && content[1] === 0x8b ? gunzipSync(content) : content;
   } catch {
-    throw new Error("o arquivo está corrompido (gzip inválido)");
+    throw new Error("the file is corrupted (invalid gzip)");
   }
-  if (data.subarray(0, 15).toString("latin1") !== "SQLite format 3") throw new Error("o arquivo não é um banco SQLite");
+  if (data.subarray(0, 15).toString("latin1") !== "SQLite format 3") throw new Error("the file is not a SQLite database");
 
   const file = join(dir, "restore.db");
   writeFileSync(file, data);
   const raw = await openRaw(file);
   try {
     const [check] = raw.prepare("PRAGMA integrity_check").all() as { integrity_check: string }[];
-    if (check?.integrity_check !== "ok") throw new Error("o banco do backup falhou na verificação de integridade");
+    if (check?.integrity_check !== "ok") throw new Error("the backup database failed the integrity check");
     if (appliedMigrations(raw) > knownMigrations()) {
-      throw new Error("o backup foi feito por uma versão mais nova do workbench; atualize o CLI antes de restaurar");
+      throw new Error("the backup was made by a newer version of workbench; update the CLI before restoring");
     }
   } finally {
     raw.close();

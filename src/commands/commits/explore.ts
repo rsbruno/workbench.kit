@@ -17,15 +17,15 @@ const OTHER = "other";
 
 function flagDate(name: string, value: string) {
   const date = parsePtBrDate(value);
-  if (!date) throw new Error(`--${name}: ${dateError(value) ?? "data inválida"}`);
+  if (!date) throw new Error(`--${name}: ${dateError(value) ?? "invalid date"}`);
   return date;
 }
 
 async function askSince(): Promise<string | undefined> {
   const answer = await text({
-    message: "A partir de qual data? (DD/MM/AAAA, opcional)",
-    placeholder: "em branco = todo o histórico",
-    validate: (value) => dateError(value ?? "")
+    message: "From which date? (DD/MM/YYYY, optional)",
+    validate: (value) => dateError(value ?? ""),
+    placeholder: "blank = the whole history"
   });
   if (isCancel(answer)) {
     cancel("cancelled");
@@ -49,15 +49,15 @@ async function resolveSince(flags: Flags, interactive: boolean, lastSynced: Date
 const br = (iso: string) => iso.split("-").reverse().join("/");
 
 function describeSince({ origin, date, at }: Since) {
-  if (!date) return "buscando o histórico inteiro (primeira sincronização)";
+  if (!date) return "fetching the whole history (first sync)";
   if (origin === "sync" && at) {
-    return `buscando desde ${at.toLocaleString("pt-BR", { timeStyle: "medium", dateStyle: "short" })} (último commit sincronizado)`;
+    return `fetching since ${at.toLocaleString("en-GB", { timeStyle: "medium", dateStyle: "short" })} (last synced commit)`;
   }
-  return `buscando desde ${br(date)} (${origin === "flag" ? "--since" : "data informada"})`;
+  return `fetching since ${br(date)} (${origin === "flag" ? "--since" : "given date"})`;
 }
 
 async function pickFrom(projects: Project[], message: string): Promise<Project> {
-  if (!projects.length) throw new Error("nenhum projeto cadastrado; crie com: workbench projects add");
+  if (!projects.length) throw new Error("no projects registered; create one with: workbench projects add");
   const id = await selectOne(
     message,
     projects.map((p) => ({ detail: p.path || "incompleto", name: p.name, value: p.id }))
@@ -68,10 +68,10 @@ async function pickFrom(projects: Project[], message: string): Promise<Project> 
 async function pickAmong(matches: Project[], all: Project[]): Promise<Project> {
   const options: Option<string>[] = [
     ...matches.map((p) => ({ detail: p.path, name: p.name, value: p.id })),
-    { name: "Outro projeto…", value: OTHER }
+    { name: "Another project…", value: OTHER }
   ];
-  const id = await selectOne("Mais de um projeto corresponde a esta pasta. Qual explorar?", options);
-  return id === OTHER ? pickFrom(all, "Qual projeto explorar?") : matches.find((p) => p.id === id)!;
+  const id = await selectOne("More than one project matches this folder. Which one to explore?", options);
+  return id === OTHER ? pickFrom(all, "Which project to explore?") : matches.find((p) => p.id === id)!;
 }
 
 async function chooseProject(flags: Flags, interactive: boolean): Promise<Project> {
@@ -86,20 +86,20 @@ async function chooseProject(flags: Flags, interactive: boolean): Promise<Projec
       if (found.length === 1) return found[0]!;
       throw new Error(
         found.length
-          ? "mais de um projeto corresponde a esta pasta; use --project <nome|id>"
-          : "nenhum projeto corresponde a esta pasta; use --project <nome|id>"
+          ? "more than one project matches this folder; use --project <name|id>"
+          : "no project matches this folder; use --project <name|id>"
       );
     }
 
     if (found.length === 1) {
       const project = found[0]!;
-      if (await askConfirm(`Projeto encontrado: "${project.name}". Explorar este projeto?`, true)) return project;
-      return pickFrom(all, "Qual projeto explorar?");
+      if (await askConfirm(`Project found: "${project.name}". Explore this project?`, true)) return project;
+      return pickFrom(all, "Which project to explore?");
     }
     if (found.length > 1) return pickAmong(found, all);
 
-    info("nenhum projeto corresponde a esta pasta");
-    return pickFrom(all, "Qual projeto explorar?");
+    info("no project matches this folder");
+    return pickFrom(all, "Which project to explore?");
   });
 }
 
@@ -107,11 +107,11 @@ export const explore = defineCommand({
   run: async (_args, flags) => {
     const interactive = Boolean(process.stdin.isTTY) && !flags.json;
     const project = await chooseProject(flags, interactive);
-    if (!project.path) throw new Error(`o projeto "${project.name}" está incompleto: rode workbench projects update`);
+    if (!project.path) throw new Error(`the project "${project.name}" is incomplete: run workbench projects update`);
 
     const cwd = project.path;
     await assertRepo(cwd).catch(() => {
-      throw new Error(`a pasta do projeto "${project.name}" não é um repositório git: ${cwd}`);
+      throw new Error(`the folder of project "${project.name}" is not a git repository: ${cwd}`);
     });
     const email = await readEmail(cwd);
     const lastSynced = await withDb((db) => lastSyncedAt(db, project.id));
@@ -122,7 +122,7 @@ export const explore = defineCommand({
     const saved = await withDb((db) => saveCommits(db, project.id, commits));
 
     if (flags.json) return void process.stdout.write(`${JSON.stringify(commits, null, 2)}\n`);
-    info(`projeto "${project.name}" · ${cwd}`);
+    info(`project "${project.name}" · ${cwd}`);
     info(describeSince(since));
     if (!commits.length) return info(`no commits for ${email}`);
 
@@ -132,7 +132,7 @@ export const explore = defineCommand({
       summary(`${day} · ${list.length}`, rows);
     }
     info(`${commits.length} commits · ${days.length} days · ${email}`);
-    info(`salvos: ${saved.inserted} novos, ${saved.existing} já existiam, ${saved.updated} atualizados`);
+    info(`saved: ${saved.inserted} new, ${saved.existing} already existed, ${saved.updated} updated`);
   },
   description: "list your commits of a project (matched from the current folder), grouped by day",
   aliases: ["ex"],

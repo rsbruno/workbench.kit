@@ -14,22 +14,22 @@ export function expandPath(input: string): string {
 }
 
 export function pathError(input: string): string | undefined {
-  if (!input.trim()) return "a pasta do projeto é obrigatória";
+  if (!input.trim()) return "the project folder is required";
   const path = expandPath(input);
-  if (!existsSync(path)) return `a pasta não existe: ${path}`;
-  if (!statSync(path).isDirectory()) return `não é uma pasta: ${path}`;
-  if (!existsSync(join(path, ".git"))) return `não há .git em ${path}`;
+  if (!existsSync(path)) return `the folder does not exist: ${path}`;
+  if (!statSync(path).isDirectory()) return `not a folder: ${path}`;
+  if (!existsSync(join(path, ".git"))) return `no .git in ${path}`;
   return undefined;
 }
 
 export function folderError(input: string): string | undefined {
   const value = input.trim();
-  if (!value) return "o nome da pasta é obrigatório";
-  if (/[\\/]/.test(value)) return "o nome da pasta não pode ter / nem \\";
+  if (!value) return "the folder name is required";
+  if (/[\\/]/.test(value)) return "the folder name cannot contain / or \\";
   return undefined;
 }
 
-export const remoteError = (input: string) => (input.trim() ? undefined : "o remote é obrigatório");
+export const remoteError = (input: string) => (input.trim() ? undefined : "the remote is required");
 
 export async function defaultPath(cwd = process.cwd()): Promise<string> {
   const root = await repoRoot(cwd);

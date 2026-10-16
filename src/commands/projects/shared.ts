@@ -15,14 +15,14 @@ import {
 import { listProjects, findProject } from "../../db/projects";
 import { selectOne, askText } from "../../ui/prompt";
 
-export const required = (v: string) => (v ? undefined : "o nome do projeto é obrigatório");
+export const required = (v: string) => (v ? undefined : "the project name is required");
 
 export const projectRows = (p: Project) => [
   { detail: p.name, name: "nome" },
   { detail: p.id, name: "id" },
-  { detail: p.path || "(vazio)", name: "pasta" },
-  { detail: p.folderName || "(vazio)", name: "nome da pasta" },
-  { detail: p.remote || "(vazio)", name: "remote" },
+  { detail: p.path || "(empty)", name: "folder" },
+  { detail: p.folderName || "(empty)", name: "folder name" },
+  { detail: p.remote || "(empty)", name: "remote" },
   { detail: p.createdAt, name: "criado em" },
   { name: "atualizado em", detail: p.updatedAt }
 ];
@@ -51,7 +51,7 @@ export async function resolveFields(flags: Flags): Promise<RepoFields> {
   const path = expandPath(
     await answer({
       fallback: await defaultPath(),
-      label: "Pasta do projeto",
+      label: "Project folder",
       validate: pathError,
       flag: flags.path,
       tty
@@ -59,8 +59,8 @@ export async function resolveFields(flags: Flags): Promise<RepoFields> {
   );
   const folderName = await answer({
     fallback: defaultFolder(path),
-    label: "Nome da pasta",
     validate: folderError,
+    label: "Folder name",
     flag: flags.folder,
     tty
   });
@@ -77,7 +77,7 @@ export async function resolveFields(flags: Flags): Promise<RepoFields> {
 export async function pickProject(db: Db, ref: string | undefined, message: string): Promise<Project> {
   if (ref) return findProject(db, ref);
   const all = await listProjects(db);
-  if (!all.length) throw new Error("nenhum projeto cadastrado");
+  if (!all.length) throw new Error("no projects registered");
   const id = await selectOne(
     message,
     all.map((p) => ({ detail: p.path || "incompleto", name: p.name, value: p.id }))

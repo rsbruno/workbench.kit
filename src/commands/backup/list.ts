@@ -10,11 +10,11 @@ export const list = defineCommand({
     const drive = requireDrive();
     const files = await task("listing backups", "backups listed", async () => listBackups(await accessToken(drive)));
     if (flags.json) return void process.stdout.write(`${JSON.stringify(files, null, 2)}\n`);
-    if (!files.length) return info("nenhum backup no Drive; rode workbench backup run");
+    if (!files.length) return info("no backups in Drive; run workbench backup run");
     summary(
       "backups",
       files.map((f) => ({
-        detail: `${new Date(f.createdTime).toLocaleString("pt-BR")}  ${formatBytes(f.size)}  ${f.id}`,
+        detail: `${new Date(f.createdTime).toLocaleString("en-GB")}  ${formatBytes(f.size)}  ${f.id}`,
         name: f.name
       }))
     );

@@ -59,17 +59,17 @@ export function netMinutes({ startHour, endHour }: Estimate): number {
 }
 
 export function validateEstimate({ startHour, endHour }: Estimate, { first, last }: Anchors): string | undefined {
-  if (!Number.isInteger(startHour) || !Number.isInteger(endHour)) return "as horas devem ser inteiras";
-  if (startHour < 0 || startHour > 23 || endHour < 1 || endHour > 24) return "início entre 0 e 23 e fim entre 1 e 24";
-  if (endHour <= startHour) return "o fim deve ser depois do início";
-  if (endHour - startHour > MAX_SPAN_HOURS) return `o dia não pode passar de ${MAX_SPAN_HOURS}h`;
-  if (startHour > first) return `o início não pode ser depois do primeiro commit (${first}h)`;
-  if (endHour < last) return `o fim não pode ser antes do último commit (${last}h)`;
+  if (!Number.isInteger(startHour) || !Number.isInteger(endHour)) return "hours must be whole numbers";
+  if (startHour < 0 || startHour > 23 || endHour < 1 || endHour > 24) return "start between 0 and 23 and end between 1 and 24";
+  if (endHour <= startHour) return "the end must be after the start";
+  if (endHour - startHour > MAX_SPAN_HOURS) return `the day cannot be longer than ${MAX_SPAN_HOURS}h`;
+  if (startHour > first) return `the start cannot be after the first commit (${first}h)`;
+  if (endHour < last) return `the end cannot be before the last commit (${last}h)`;
 
   // Time beyond the commits only exists to complete the 8h day, never more than that.
   const allowed = Math.max(WORKDAY_MINUTES, netMinutes({ startHour: first, endHour: last }));
   if (netMinutes({ startHour, endHour }) > allowed) {
-    return `não acrescente horas além dos commits: só é permitido ir além deles para fechar as 8h (no máximo ${formatHours(allowed)} de trabalho; sem mais informação, use ${first}h a ${last}h)`;
+    return `do not add hours beyond the commits: going past them is only allowed to complete 8h (at most ${formatHours(allowed)} of work; with no further information, use ${first}h to ${last}h)`;
   }
   return undefined;
 }
@@ -102,9 +102,9 @@ export function validateBlocks(blocks: Block[]): string | undefined {
   const sorted = sortBlocks(blocks);
   for (const [i, block] of sorted.entries()) {
     if (block.startMinute < 0 || block.endMinute > DAY_MINUTES || block.endMinute <= block.startMinute) {
-      return "cada bloco precisa terminar depois de começar, dentro do mesmo dia";
+      return "each block must end after it starts, within the same day";
     }
-    if (i > 0 && block.startMinute < sorted[i - 1]!.endMinute) return "os blocos do dia não podem se sobrepor";
+    if (i > 0 && block.startMinute < sorted[i - 1]!.endMinute) return "the blocks of the day cannot overlap";
   }
   return undefined;
 }

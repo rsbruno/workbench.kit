@@ -10,7 +10,7 @@ import { warn } from "./ui/summary";
 import { pkg } from "./lib/pkg";
 
 const FLAGS_HELP =
-  "flags: --since/--until DD/MM/AAAA, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --out file (timesheet pdf|xlsx|csv)   --month MM/AAAA (daily sync)   --start/--end HH:MM --type comum|extra (time)   --file <id|path> --yes --local (backup)   --client/--secret/--disconnect (config drive)   -v, --version";
+  "flags: --since/--until DD/MM/YYYY, --project <name|id> (commits explore, daily, timesheet)   --json   --force   --path/--folder/--remote (projects add|update)   --text (daily add|update, time)   --out file (timesheet pdf|xlsx|csv)   --month MM/YYYY (daily sync)   --start/--end HH:MM --type regular|overtime (time)   --file <id|path> --yes --local (backup)   --client/--secret/--disconnect (config drive)   -v, --version";
 
 function help() {
   header();

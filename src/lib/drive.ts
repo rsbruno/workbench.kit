@@ -47,9 +47,9 @@ async function tokenRequest(
   if (!response.ok) {
     const reason =
       data.error === "invalid_grant"
-        ? "acesso revogado ou expirado; reconecte com workbench config drive"
+        ? "access revoked or expired; reconnect with workbench config drive"
         : (data.error_description ?? data.error);
-    throw new Error(`Google recusou a autenticação: ${reason}`);
+    throw new Error(`Google rejected the authentication: ${reason}`);
   }
   return data as { refresh_token?: string; access_token: string; id_token?: string };
 }
@@ -79,13 +79,13 @@ export async function connect(clientId: string, clientSecret: string, onUrl: (ur
       const ok = !error && received && url.searchParams.get("state") === state;
       res.writeHead(ok ? 200 : 400, { "content-type": "text/plain; charset=utf-8" });
       res.end(
-        ok ? "workbench conectado ao Google Drive. Pode fechar esta aba." : "Não foi possível conectar. Volte ao terminal."
+        ok ? "workbench is connected to Google Drive. You can close this tab." : "Could not connect. Go back to the terminal."
       );
       if (ok) settle.resolve(received);
-      else settle.reject(new Error(error ? `autorização negada (${error})` : "resposta de autorização inválida"));
+      else settle.reject(new Error(error ? `authorization denied (${error})` : "invalid authorization response"));
     });
     const timer = setTimeout(
-      () => settle.reject(new Error("tempo esgotado esperando a autorização no navegador")),
+      () => settle.reject(new Error("timed out waiting for the authorization in the browser")),
       LOGIN_TIMEOUT_MS
     );
     const done = () => {
@@ -121,7 +121,7 @@ export async function connect(clientId: string, clientSecret: string, onUrl: (ur
     code: await code
   });
   if (!tokens.refresh_token)
-    throw new Error("o Google não devolveu um refresh token; revogue o acesso do app na conta e tente de novo");
+    throw new Error("Google did not return a refresh token; revoke the app's access in the account and try again");
   return { refreshToken: tokens.refresh_token, email: emailOf(tokens.id_token), clientSecret, clientId };
 }
 

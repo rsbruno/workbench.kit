@@ -9,16 +9,16 @@ import { askText } from "../../ui/prompt";
 import { withDb } from "../../db";
 
 async function askAll(db: Parameters<typeof assertNameFree>[0], project: Project): Promise<ProjectPatch> {
-  const name = await askText("Nome do projeto", {
+  const name = await askText("Project name", {
     initial: project.name,
     validate: required
   });
   await assertNameFree(db, name, project.id);
-  const path = await askText("Pasta do projeto", {
+  const path = await askText("Project folder", {
     initial: project.path || (await defaultPath()),
     validate: pathError
   });
-  const folderName = await askText("Nome da pasta", {
+  const folderName = await askText("Folder name", {
     initial: project.folderName || defaultFolder(path),
     validate: folderError
   });
@@ -42,14 +42,14 @@ export const update = defineCommand({
   run: (args, flags) =>
     withDb(async (db) => {
       const [ref, ...rest] = args;
-      const project = await pickProject(db, ref, "Qual projeto editar?");
+      const project = await pickProject(db, ref, "Which project should be edited?");
       const given = givenPatch(rest.join(" ").trim(), flags);
       const patch = Object.keys(given).length ? given : await askAll(db, project);
       if (patch.name) await assertNameFree(db, patch.name, project.id);
 
       const result = await updateProject(db, project, patch);
       if (!result.changed) return info("nada mudou");
-      summary("projeto atualizado", projectRows(result.project));
+      summary("project updated", projectRows(result.project));
     }),
   description: "edit a project: update [name|id] [new name] [--path] [--folder] [--remote] (asks all when none)",
   aliases: ["edit"],

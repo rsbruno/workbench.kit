@@ -82,7 +82,7 @@ async function migrateExclusively(raw: Raw, db: Db) {
   raw.exec("BEGIN IMMEDIATE");
   try {
     if (appliedMigrations(raw) > knownMigrations()) {
-      throw new Error("o banco foi atualizado por uma versão mais nova do workbench; atualize o CLI antes de continuar");
+      throw new Error("the database was updated by a newer version of workbench; update the CLI before continuing");
     }
     await migrate(
       db,
